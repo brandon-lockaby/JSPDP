@@ -2,6 +2,7 @@
 	Copyright 2011 Brandon Lockaby
 	
 	This file is part of JSPDP.
+	https://github.com/brandon-lockaby/JSPDP
 
     JSPDP is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

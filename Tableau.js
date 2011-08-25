@@ -23,6 +23,7 @@
 	No behavior shall be defined in this class that should be specific to
 	any individual gameplay mode, or graphics or audio theme.
 */
+
 JSPDP.Tableau = function(width, height) {
 
 	this.dimensions = {width: width, height: height};
@@ -34,7 +35,7 @@ JSPDP.Tableau = function(width, height) {
 		}
 	}
 	
-	// defaults durations from EASY difficulty
+	// default durations from EASY difficulty
 	this.durations = {
 		hover : 12,
 		match : 61,
@@ -83,7 +84,7 @@ JSPDP.Tableau.prototype.setPanel = function(row, col, panel) {
 	} else if(console) console.log("setPanel out of bounds ", row, col);
 };
 
-JSPDP.Tableau.prototype.eachPanel : function(callback) {
+JSPDP.Tableau.prototype.eachPanel = function(callback) {
 	for(var row = 0; row < this.dimensions.height; row++) {
 		for(var col = 0; col < this.dimensions.width; col++) {
 			callback(this.getPanel(row, col), row, col);

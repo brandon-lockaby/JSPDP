@@ -18,4 +18,4 @@
 
 */
 
-JSPDP = {};
+function JSPDP() {};

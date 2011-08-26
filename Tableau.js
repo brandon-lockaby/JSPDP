@@ -44,13 +44,17 @@ JSPDP.Tableau = function(width, height) {
 	};
 
 	// Events
+	this.onActionPhase = new JSPDP.Event();
+
 	this.onActive = new JSPDP.Event();
 	this.onInactive = new JSPDP.Event();
+	
+	this.onSetPanel = new JSPDP.Event();
 	this.onSwap = new JSPDP.Event();
-	this.onMatch = new JSPDP.Event();
-	this.onPop = new JSPDP.Event();
 	this.onLand = new JSPDP.Event();
-	this.onActionPhase = new JSPDP.Event();
+	this.onCombo = new JSPDP.Event();
+	this.onPop = new JSPDP.Event();
+	
 }
 
 JSPDP.Tableau.prototype = {};
@@ -81,14 +85,17 @@ JSPDP.Tableau.prototype.getPanel = function(row, col) {
 
 JSPDP.Tableau.prototype.setPanel = function(row, col, panel) {
 	if(this.bounds(row, col)) {
+		panel.row = row;
+		panel.col = col;
 		this.panels[row][col] = panel;
+		this.onSetPanel.fire(panel);
 	} else if(console) console.log("setPanel out of bounds ", row, col);
 };
 
 JSPDP.Tableau.prototype.eachPanel = function(callback) {
 	for(var row = 0; row < this.dimensions.height; row++) {
 		for(var col = 0; col < this.dimensions.width; col++) {
-			callback(this.getPanel(row, col), row, col);
+			callback(this.getPanel(row, col));
 		}
 	}
 };
@@ -129,8 +136,6 @@ JSPDP.Tableau.prototype.swap = function(row, col, from_left) {
 			if(below && below.isAir()) below.addFlags(JSPDP.Panel.EFlags.DontSwap);
 		}
 		
-		this.onSwap.fire();
-		
 		if(row > 0) {
 			var panel_below = this.getPanel(row - 1, col);
 			if(panel_below && (panel_below.isAir() || panel_below.isFalling())) {
@@ -141,6 +146,8 @@ JSPDP.Tableau.prototype.swap = function(row, col, from_left) {
 				panel.addFlags(JSPDP.Panel.EFlags.DontSwap);
 			}
 		}
+		
+		this.onSwap.fire([panel, other_panel]);
 		
 		return true;
 	}
@@ -182,39 +189,39 @@ JSPDP.Tableau.prototype.runTick = function() {
 
 JSPDP.Tableau.prototype.runFlagsPhase = function() {
 	var self = this;
-	this.eachPanel(function(panel, row, col) {
+	this.eachPanel(function(panel) {
 		// falling
 		if(panel.isFalling()) {
 			// should always be only displacing air
-			var other_panel = self.getPanel(row - 1, col);
+			var other_panel = self.getPanel(panel.row - 1, panel.col);
 			other_panel.flags = 0;
-			self.setPanel(row, col, other_panel); 
-			self.setPanel(row - 1, col, panel);
+			self.setPanel(panel.row, panel.col, other_panel); 
+			self.setPanel(panel.row - 1, panel.col, panel);
 		}
 		// timers decrementing
 		else if(panel.timer > 0) {
 			panel.decrementTimer();
 			if(!panel.timer) {
 				if(panel.isSwapping()) {
-					self.expireSwapping(panel, row, col);
+					self.expireSwapping(panel);
 				}
 				else if(panel.isHovering()) {
-					self.expireHovering(panel, row, col);
+					self.expireHovering(panel);
 				}
 				else if(panel.isLanding()) {
-					self.expireLanding(panel, row, col);
+					self.expireLanding(panel);
 				}
 				else if(panel.isMatching()) {
-					self.expireMatching(panel, row, col);
+					self.expireMatching(panel);
 				}
 				else if(panel.isPopping()) {
-					self.expirePopping(panel, row, col);
+					self.expirePopping(panel);
 				}
 				else if(panel.isPopped()) {
-					self.expirePopped(panel, row, col);
+					self.expirePopped(panel);
 				}
 				else {
-					if(console) console.log("wat", row, col, panel);
+					if(console) console.log("wat", panel);
 				}
 			}
 		}
@@ -224,43 +231,40 @@ JSPDP.Tableau.prototype.runFlagsPhase = function() {
 JSPDP.Tableau.prototype.runLandingPhase = function() {
 	var result = false;
 	var self = this;
-	this.eachPanel(function(panel, row, col) {
+	this.eachPanel(function(panel) {
 		if(panel.isFalling()) {
-			if(row == 0) {
+			if(panel.row == 0) {
 				panel.removeFlags(JSPDP.Panel.EFlags.Falling);
 				panel.setTimer(JSPDP.Panel.EFlags.Landing, 12);
 				self.needsCheckMatches = true;
-				result = true;
+				self.onLand.fire(panel);
 			}
 			else {
-				var panel_below = self.getPanel(row - 1, col);
+				var panel_below = self.getPanel(panel.row - 1, panel.col);
 				if(!panel_below.isAir()) {
 					if(!panel_below.isFalling()) {
 						panel.removeFlags(JSPDP.Panel.EFlags.Falling);
 						if(panel_below.isHovering()) {
 							// hover and inherit the hover time of the panel it's landing on
-							self.setHoverers(row, col, panel_below.timer, 0);
+							self.setHoverers(panel.row, panel.col, panel_below.timer, 0);
 						}
 						else {
 							panel.setTimer(JSPDP.Panel.EFlags.Landing, 12);
-							result = true;
 							self.needsCheckMatches = true;
+							self.onLand.fire(panel);
 						}
 					}
 				}
 			}
 		}
 	});
-	if(result) {
-		this.onLand.fire();
-	}
 };
 
 JSPDP.Tableau.prototype.runMatchPhase = function() {
 	if(this.needsCheckMatches) {
 		this.needsCheckMatches = false;
 
-		this.eachPanel(function(panel, row, col) {
+		this.eachPanel(function(panel) {
 			panel._checkMatches_matched = 0;
 		});
 		
@@ -380,6 +384,7 @@ JSPDP.Tableau.prototype.runMatchPhase = function() {
 		
 		// re-flagging for matching and chaining
 		var combo_index = 1;
+		var combo = [];
 		for(var row = this.dimensions.height - 1; row >= 0; row--) {
 			for(var col = 0; col < this.dimensions.width; col++) {
 				panel = this.getPanel(row, col);
@@ -393,6 +398,7 @@ JSPDP.Tableau.prototype.runMatchPhase = function() {
 					panel.comboSize = combo_size;
 					panel.comboIndex = combo_index;
 					panel.chainIndex = this.chainLevel;
+					combo.push(panel);
 					++combo_index;
 				}
 				else {
@@ -412,7 +418,7 @@ JSPDP.Tableau.prototype.runMatchPhase = function() {
 			}
 		}
 		if(combo_size) {
-			this.onMatch.fire();
+			this.onCombo.fire(combo);
 		}
 		
 		// OTODO: score
@@ -425,7 +431,7 @@ JSPDP.Tableau.prototype.runMatchPhase = function() {
 JSPDP.Tableau.prototype.runWrapUpPhase = function() {
 	var active_count = 0;
 	var chaining_count = 0;
-	this.eachPanel(function(panel, row, col) {
+	this.eachPanel(function(panel) {
 		if(panel.isActive()) ++active_count;
 		if(panel.isChaining()) ++chaining_count;
 	});
@@ -440,76 +446,80 @@ JSPDP.Tableau.prototype.runWrapUpPhase = function() {
 
 // Timer expiration behaviors
 
-JSPDP.Tableau.prototype.expireSwapping = function(panel, row, col) {
+JSPDP.Tableau.prototype.expireSwapping = function(panel) {
 	panel.removeFlags(JSPDP.Panel.EFlags.Swapping | JSPDP.Panel.EFlags.DontSwap);
 	var from_left = panel.getFlags(JSPDP.Panel.EFlags.FromLeft);
 	if(from_left) {
 		panel.removeFlags(JSPDP.Panel.EFlags.FromLeft);
 	}
 	// Now there are a few cases where some hovering must be done.
-	if(!panel.isAir() && row != 0) {
-		var panel_below = this.getPanel(row - 1, col);
+	if(!panel.isAir() && panel.row != 0) {
+		var panel_below = this.getPanel(panel.row - 1, panel.col);
 		if(panel_below.isAir()) {
 			panel.setTimer(JSPDP.Panel.EFlags.Hovering, this.durations.hover);
-			this.setHoverers(row + 1, col, this.durations.hover + 1, 0);
+			this.setHoverers(panel.row + 1, panel.col, this.durations.hover + 1, 0);
 			// CRAZY BUG EMULATION:
 			// the space it was swapping from hovers too
-			var other_col = col + (from_left ? -1 : 1);
-			var other_panel = this.getPanel(row, other_col);
+			var other_col = panel.col + (from_left ? -1 : 1);
+			var other_panel = this.getPanel(panel.row, other_col);
 			if(other_panel.isFalling()) {
 				if(from_left) {
 					other_panel.setTimer(JSPDP.Panel.EFlags.Hovering, this.durations.hover);
-					this.setHoverers(row + 1, other_col, this.durations.hover + 1, 0);
+					this.setHoverers(panel.row + 1, other_col, this.durations.hover + 1, 0);
 				}
 				else {
-					this.setHoverers(row, other_col, this.durations.hover, 0);
+					this.setHoverers(panel.row, other_col, this.durations.hover, 0);
 				}
 			}
 		}
 		else if(panel_below.isHovering()) {
 			panel.setTimer(JSPDP.Panel.EFlags.Hovering, this.durations.hover);
-			this.setHoverers(row + 1, col, this.durations.hover + 1, 0);
+			this.setHoverers(panel.row + 1, panel.col, this.durations.hover + 1, 0);
 		}
 	}
 	else if(panel.isAir()) {
 		// an empty space finished swapping; panels above it hover
-		this.setHoverers(row + 1, col, this.durations.hover + 1, 0);
+		this.setHoverers(panel.row + 1, panel.col, this.durations.hover + 1, 0);
 	}
 	this.needsCheckMatches = true;
 };
 
-JSPDP.Tableau.prototype.expireHovering = function(panel, row, col) {
+JSPDP.Tableau.prototype.expireHovering = function(panel) {
 	panel.removeFlags(JSPDP.Panel.EFlags.Hovering);
 	panel.addFlags(JSPDP.Panel.EFlags.Falling);
-	var other_panel = this.getPanel(row - 1, col); // air
+	var other_panel = this.getPanel(panel.row - 1, panel.col); // air
 	other_panel.flags = 0;
-	this.setPanel(row, col, other_panel);
-	this.setPanel(row - 1, col, panel);
+	this.setPanel(panel.row, panel.col, other_panel);
+	this.setPanel(panel.row - 1, panel.col, panel);
 };
 
-JSPDP.Tableau.prototype.expireLanding = function(panel, row, col) {
+JSPDP.Tableau.prototype.expireLanding = function(panel) {
 	panel.removeFlags(JSPDP.Panel.EFlags.Landing);
 };
 
-JSPDP.Tableau.prototype.expireMatching = function(panel, row, col) {
+JSPDP.Tableau.prototype.expireMatching = function(panel) {
 	panel.removeFlags(JSPDP.Panel.EFlags.Matching);
 	panel.setTimer(JSPDP.Panel.EFlags.Popping, panel.comboIndex * this.durations.pop);
 };
 
-JSPDP.Tableau.prototype.expirePopping = function(panel, row, col) {
+JSPDP.Tableau.prototype.expirePopping = function(panel) {
 	// if it's the last panel to pop, it should be removed immediately
 	if(panel.comboIndex == panel.comboSize) {
-		this.setPanel(row, col, new JSPDP.Panel());
-		this.setHoverers(row + 1, col, this.durations.hover + 1, JSPDP.Panel.EFlags.Chaining);
+		// but set the popped flag
+		panel.removeFlags(JSPDP.Panel.EFlags.Popping);
+		panel.addFlags(JSPDP.Panel.EFlags.Popped);
+		this.setPanel(panel.row, panel.col, new JSPDP.Panel());
+		this.setHoverers(panel.row + 1, panel.col, this.durations.hover + 1, JSPDP.Panel.EFlags.Chaining);
 	}
 	else {
 		panel.removeFlags(JSPDP.Panel.EFlags.Popping);
 		panel.setTimer(JSPDP.Panel.EFlags.Popped, (panel.comboSize - panel.comboIndex) * this.durations.pop);
 	}
-	this.onPop.fire();
+	this.onPop.fire(panel);
 };
 
-JSPDP.Tableau.prototype.expirePopped = function(panel, row, col) {
-	this.setPanel(row, col, new JSPDP.Panel());
-	this.setHoverers(row + 1, col, this.durations.hover + 1, JSPDP.Panel.EFlags.Chaining);
+JSPDP.Tableau.prototype.expirePopped = function(panel) {
+	// note: leave the popped flag alone
+	this.setPanel(panel.row, panel.col, new JSPDP.Panel());
+	this.setHoverers(panel.row + 1, panel.col, this.durations.hover + 1, JSPDP.Panel.EFlags.Chaining);
 };

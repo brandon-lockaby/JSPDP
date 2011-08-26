@@ -26,6 +26,9 @@ JSPDP.Panel.prototype = {
 	type : 0,
 	color : 0,
 	
+	row : 0,
+	col : 0,
+	
 	flags : 0,
 	timer : 0,
 	comboIndex : 0,

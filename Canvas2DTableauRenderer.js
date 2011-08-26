@@ -151,9 +151,13 @@ JSPDP.Canvas2DTableauRenderer.prototype.runTick = function() {
 		}
 	}
 	++this.tickCount;
-	if(this.tickCount & 0x111 == 0) {
+	if((this.tickCount & 0xf) == 0) {
+		this.ctx.save();
+		this.ctx.strokeStyle = "rgb(64,64,64)";
+		this.ctx.fillStyle = "rgb(255,255,255)";
 		this.ctx.clearRect(0, 0, this.canvas.width, 28);
 		this.ctx.strokeText(this.animatingPanels.length, 2, 18);
 		this.ctx.fillText(this.animatingPanels.length, 2, 18);
+		this.ctx.restore();
 	}
 };

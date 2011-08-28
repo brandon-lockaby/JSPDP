@@ -67,6 +67,7 @@ proto.init = function(width, height) {
 proto.needsCheckMatches = false;
 proto.chainLevel = 0;
 proto.active = false;
+proto.tickCount = 0;
 
 // Operations
 
@@ -182,6 +183,8 @@ proto.runTick = function() {
 	this.runLandingPhase();
 	this.runMatchPhase();
 	this.runWrapUpPhase();
+	
+	++this.tickCount;
 };
 
 // Phases for runTick

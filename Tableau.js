@@ -70,10 +70,6 @@ proto.active = false;
 
 // Operations
 
-proto.resize = function(width, height) {
-	
-};
-
 proto.bounds = function(row, col) {
 	return (row >= 0) && (row < this.dimensions.height) && (col >= 0) && (col < this.dimensions.width);
 };

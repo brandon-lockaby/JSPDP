@@ -19,7 +19,12 @@
 
 */
 
-JSPDP.Canvas2DTableauRenderer = function(tableau) {
+JSPDP.Canvas2DTableauRenderer = function() {
+};
+
+var proto = (JSPDP.Canvas2DTableauRenderer.prototype = {});
+
+proto.init = function(tableau) {
 	this.tableau = tableau;
 	this.canvas = document.createElement("canvas");
 	this.canvas.width = 56 * tableau.dimensions.width;
@@ -64,13 +69,13 @@ JSPDP.Canvas2DTableauRenderer = function(tableau) {
 		requestAnimationFrame(animate);
 	}
 	requestAnimationFrame(animate);
+	
+	return this;
 }
 
-JSPDP.Canvas2DTableauRenderer.prototype = {};
+proto.tickCount = 0;
 
-JSPDP.Canvas2DTableauRenderer.prototype.tickCount = 0;
-
-JSPDP.Canvas2DTableauRenderer.prototype.renderPanel = function(panel) {
+proto.renderPanel = function(panel) {
 	if(!panel.isAir() && !panel.isPopped()) {
 		var x = 56 * panel.col;
 		var y = this.canvas.height - (56 * panel.row) - 56;
@@ -106,7 +111,7 @@ JSPDP.Canvas2DTableauRenderer.prototype.renderPanel = function(panel) {
 	}
 };
 
-JSPDP.Canvas2DTableauRenderer.prototype.redraw = function() {
+proto.redraw = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	var self = this;
 	this.tableau.eachPanel(function(panel) {
@@ -114,23 +119,23 @@ JSPDP.Canvas2DTableauRenderer.prototype.redraw = function() {
 	});
 };
 
-JSPDP.Canvas2DTableauRenderer.prototype.onSetPanel = function(panel) {
+proto.onSetPanel = function(panel) {
 	this.renderPanel(panel);
 };
 
-JSPDP.Canvas2DTableauRenderer.prototype.onSwap = function(duo) {
+proto.onSwap = function(duo) {
 	duo[0].renderFlags = JSPDP.Panel.EFlags.Swapping;
 	this.animatingPanels.push(duo[0]);
 	duo[1].renderFlags = JSPDP.Panel.EFlags.Swapping;
 	this.animatingPanels.push(duo[1]);
 };
 
-JSPDP.Canvas2DTableauRenderer.prototype.onLand = function(panel) {
+proto.onLand = function(panel) {
 	panel.renderFlags = JSPDP.Panel.EFlags.Landing;
 	this.animatingPanels.push(panel);
 };
 
-JSPDP.Canvas2DTableauRenderer.prototype.onCombo = function(combo) {
+proto.onCombo = function(combo) {
 	for(var i = 0; i < combo.length; i++) {
 		var panel = combo[i];
 		panel.renderFlags = JSPDP.Panel.EFlags.Matching;
@@ -138,11 +143,11 @@ JSPDP.Canvas2DTableauRenderer.prototype.onCombo = function(combo) {
 	}
 };
 
-JSPDP.Canvas2DTableauRenderer.prototype.onPop = function(panel) {
+proto.onPop = function(panel) {
 	this.renderPanel(panel);
 };
 
-JSPDP.Canvas2DTableauRenderer.prototype.runTick = function() {
+proto.runTick = function() {
 	for(var i = 0; i < this.animatingPanels.length; i++) {
 		var panel = this.animatingPanels[i];
 		this.renderPanel(panel);

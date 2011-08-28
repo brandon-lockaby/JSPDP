@@ -21,121 +21,121 @@
 
 JSPDP.Panel = function() {
 }
-JSPDP.Panel.prototype = {
 
-	type : 0,
-	color : 0,
-	
-	row : 0,
-	col : 0,
-	
-	flags : 0,
-	timer : 0,
-	comboIndex : 0,
-	comboSize : 0,
-	chainIndex : 0,
+var proto = (JSPDP.Panel.prototype = {});
 
-	decrementTimer : function() {
-		if(this.timer > 0) {
-			--this.timer;
-		}
-	},
+proto.type = 0;
+proto.color = 0;
 	
-	removeFlags : function(flags) {
-		this.flags &= ~flags;
-	},
+proto.row = 0;
+proto.col = 0;
 	
-	getFlags : function(flags) {
-		return (this.flags & flags);
-	},
-	
-	addFlags : function(flags) {
-		this.flags |= flags;
-	},
-	
-	setTimer : function(flags, timer) {
-		this.flags |= flags;
-		this.timer = timer;
-	},
-	
-	isAir : function() {
-		return (this.type == 0);
-	},
-	
-	isActive : function() {
-		return (this.flags != 0);
-	},
-	
-	isFalling : function() {
-		return (this.flags & JSPDP.Panel.EFlags.Falling);
-	},
-	
-	isSwapping : function() {
-		return (this.flags & JSPDP.Panel.EFlags.Swapping);
-	},
-	
-	isHovering : function() {
-		return (this.flags & JSPDP.Panel.EFlags.Hovering);
-	},
-	
-	isChaining : function() {
-		return (this.flags & JSPDP.Panel.EFlags.Chaining);
-	},
-	
-	isMatching : function() {
-		return (this.flags & JSPDP.Panel.EFlags.Matching);
-	},
-	
-	isPopping : function() {
-		return (this.flags & JSPDP.Panel.EFlags.Popping);
-	},
-	
-	isPopped : function() {
-		return (this.flags & JSPDP.Panel.EFlags.Popped);
-	},
-	
-	isLanding : function() {
-		return (this.flags & JSPDP.Panel.EFlags.Landing);
-	},
-	
-	canHover : function() {
-		return !this.isAir() &&
-			!(this.flags & (
-			JSPDP.Panel.EFlags.Matching |
-			JSPDP.Panel.EFlags.Popping |
-			JSPDP.Panel.EFlags.Popped |
-			
-			JSPDP.Panel.EFlags.Hovering |
-			JSPDP.Panel.EFlags.Falling |
-			JSPDP.Panel.EFlags.Swapping // thx: sharpobject@gmail.com
-		));
-	},
-	
-	canMatch : function() {
-		return !this.isAir() &&
-			!(this.flags & (
-			JSPDP.Panel.EFlags.Matching |
-			JSPDP.Panel.EFlags.Popping |
-			JSPDP.Panel.EFlags.Popped |
-			
-			JSPDP.Panel.EFlags.Hovering |
-			JSPDP.Panel.EFlags.Falling |
-			JSPDP.Panel.EFlags.Swapping
-		));
-	},
-	
-	canSwap : function() {
-		return !(this.flags & (
-			JSPDP.Panel.EFlags.Matching |
-			JSPDP.Panel.EFlags.Popping |
-			JSPDP.Panel.EFlags.Popped |
-			
-			JSPDP.Panel.EFlags.Hovering |
-			JSPDP.Panel.EFlags.DontSwap
-		));
+proto.flags = 0;
+proto.timer = 0;
+proto.comboIndex = 0;
+proto.comboSize = 0;
+proto.chainIndex = 0;
+
+proto.decrementTimer = function() {
+	if(this.timer > 0) {
+		--this.timer;
 	}
+};
 	
-}
+proto.removeFlags = function(flags) {
+	this.flags &= ~flags;
+};
+	
+proto.getFlags = function(flags) {
+	return (this.flags & flags);
+};
+	
+proto.addFlags = function(flags) {
+	this.flags |= flags;
+};
+	
+proto.setTimer = function(flags, timer) {
+	this.flags |= flags;
+	this.timer = timer;
+};
+	
+proto.isAir = function() {
+	return (this.type == 0);
+};
+	
+proto.isActive = function() {
+	return (this.flags != 0);
+};
+	
+proto.isFalling = function() {
+	return (this.flags & JSPDP.Panel.EFlags.Falling);
+};
+	
+proto.isSwapping = function() {
+	return (this.flags & JSPDP.Panel.EFlags.Swapping);
+};
+	
+proto.isHovering = function() {
+	return (this.flags & JSPDP.Panel.EFlags.Hovering);
+};
+	
+proto.isChaining = function() {
+	return (this.flags & JSPDP.Panel.EFlags.Chaining);
+};
+	
+proto.isMatching = function() {
+	return (this.flags & JSPDP.Panel.EFlags.Matching);
+};
+	
+proto.isPopping = function() {
+	return (this.flags & JSPDP.Panel.EFlags.Popping);
+};
+	
+proto.isPopped = function() {
+	return (this.flags & JSPDP.Panel.EFlags.Popped);
+};
+	
+proto.isLanding = function() {
+	return (this.flags & JSPDP.Panel.EFlags.Landing);
+};
+	
+proto.canHover = function() {
+	return !this.isAir() &&
+		!(this.flags & (
+		JSPDP.Panel.EFlags.Matching |
+		JSPDP.Panel.EFlags.Popping |
+		JSPDP.Panel.EFlags.Popped |
+		
+		JSPDP.Panel.EFlags.Hovering |
+		JSPDP.Panel.EFlags.Falling |
+		JSPDP.Panel.EFlags.Swapping // thx: sharpobject@gmail.com
+	));
+};
+	
+proto.canMatch = function() {
+	return !this.isAir() &&
+		!(this.flags & (
+		JSPDP.Panel.EFlags.Matching |
+		JSPDP.Panel.EFlags.Popping |
+		JSPDP.Panel.EFlags.Popped |
+		
+		JSPDP.Panel.EFlags.Hovering |
+		JSPDP.Panel.EFlags.Falling |
+		JSPDP.Panel.EFlags.Swapping
+	));
+};
+	
+proto.canSwap = function() {
+	return !(this.flags & (
+		JSPDP.Panel.EFlags.Matching |
+		JSPDP.Panel.EFlags.Popping |
+		JSPDP.Panel.EFlags.Popped |
+		
+		JSPDP.Panel.EFlags.Hovering |
+		JSPDP.Panel.EFlags.DontSwap
+	));
+};
+	
 JSPDP.Panel.EFlags = {
 	Swapping : 1,
 	FromLeft : 1 << 1,

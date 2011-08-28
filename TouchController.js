@@ -106,14 +106,17 @@ proto.onActionPhase = function() {
 			var from_left = this.position.x > this.selection.x;
 			var other_x = this.selection.x + (from_left ? 1 : -1);
 			var other_panel = this.tableau.getPanel(this.selection.y, other_x);
-			if(!panel.isSwapping() && (!other_panel || !other_panel.isSwapping())) {
-				if(this.tableau.swap(this.selection.y, this.selection.x, from_left)) {
-					this.lastSwapTick = this.tableau.tickCount;
-					this.selection = {
-						panel : panel,
-						x : other_x,
-						y : this.selection.y
-					};
+			
+			if(panel && other_panel) {
+				if(!panel.isFalling() && !other_panel.isFalling()) {
+					if(this.tableau.swap(this.selection.y, this.selection.x, from_left)) {
+						this.lastSwapTick = this.tableau.tickCount;
+						this.selection = {
+							panel : panel,
+							x : other_x,
+							y : this.selection.y
+						};
+					}
 				}
 			}
 		}

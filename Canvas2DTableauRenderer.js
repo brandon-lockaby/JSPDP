@@ -24,16 +24,14 @@ JSPDP.Canvas2DTableauRenderer = function() {
 
 var proto = (JSPDP.Canvas2DTableauRenderer.prototype = {});
 
-proto.init = function(tableau) {
+proto.init = function(tableau, theme) {
 	this.tableau = tableau;
+	this.theme = theme;
 	this.canvas = document.createElement("canvas");
-	this.canvas.width = 56 * tableau.dimensions.width;
-	this.canvas.height = 56 * tableau.dimensions.height;
+	this.canvas.width = this.theme.panelDimensions.width * tableau.dimensions.width;
+	this.canvas.height = this.theme.panelDimensions.height * tableau.dimensions.height;
 	this.ctx = this.canvas.getContext('2d');
 	this.ctx.font = "16px georgia";
-	
-	this.panelTex = new Image();
-	this.panelTex.src = "themes/alpha/panels.png";
 	
 	this.tableau.onSetPanel.subscribe(this.onSetPanel.bind(this));
 	this.tableau.onSwap.subscribe(this.onSwap.bind(this));
@@ -77,37 +75,37 @@ proto.tickCount = 0;
 
 proto.renderPanel = function(panel) {
 	if(!panel.isAir() && !panel.isPopped()) {
-		var x = 56 * panel.col;
-		var y = this.canvas.height - (56 * panel.row) - 56;
+		var x = this.theme.panelDimensions.width * panel.col;
+		var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
 	
 		if(panel.isMatching() && (this.tickCount & 1) && (panel.timer > (this.tableau.durations.match * 0.25))) {
 			// render white
-			this.ctx.fillRect(x, y, 56, 56);
+			this.ctx.fillRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
 		} else if(panel.isPopping()) {
 			// render gray
 			this.ctx.fillStyle = "rgb(64,64,64)";
-			this.ctx.fillRect(x, y, 56, 56);
+			this.ctx.fillRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
 			this.ctx.fillStyle = "rgb(255,255,255)";
 		}
 		else if(panel.isSwapping()) {
 			// render swapping
-			var offs = 56 / 4;
+			var offs = this.theme.panelDimensions.width / 4;
 			offs *= (4 - panel.timer);
 			if(panel.flags & JSPDP.Panel.EFlags.FromLeft) {
-				offs = -56 + offs;
+				offs = -this.theme.panelDimensions.width + offs;
 			} else {
-				offs = 56 - offs;
+				offs = this.theme.panelDimensions.width - offs;
 			}
-			this.ctx.drawImage(this.panelTex, 56 * panel.color, 0, 56, 56, x + offs, y, 56, 56);
+			this.ctx.drawImage(this.theme.panelImages[panel.color], x + offs, y);
 		} else {
 			// render normally
-			this.ctx.drawImage(this.panelTex, 56 * panel.color, 0, 56, 56, x, y, 56, 56);
+			this.ctx.drawImage(this.theme.panelImages[panel.color], x, y);
 		}
 	} else {
-		var x = 56 * panel.col;
-		var y = this.canvas.height - (56 * panel.row) - 56;
+		var x = this.theme.panelDimensions.width * panel.col;
+		var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
 	
-		this.ctx.clearRect(x, y, 56, 56);
+		this.ctx.clearRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
 	}
 };
 

@@ -40,6 +40,7 @@ proto.init = function(tableau, theme) {
 	this.tableau.onPop.subscribe(this.onPop.bind(this));
 	
 	this.animatingPanels = [];
+	this.swappingPanels = [];
 	
 	this.ctx.fillStyle = "rgb(255,255,255)";
 	
@@ -74,10 +75,9 @@ proto.init = function(tableau, theme) {
 proto.tickCount = 0;
 
 proto.renderPanel = function(panel) {
-	if(!panel.isAir() && !panel.isPopped()) {
-		var x = this.theme.panelDimensions.width * panel.col;
-		var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
-	
+	var x = this.theme.panelDimensions.width * panel.col;
+	var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
+	if(!panel.isAir() && !panel.isPopped() && !panel.isSwapping()) {
 		if(panel.isMatching() && (this.tickCount & 1) && (panel.timer > (this.tableau.durations.match * 0.25))) {
 			// render white
 			this.ctx.fillRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
@@ -86,26 +86,27 @@ proto.renderPanel = function(panel) {
 			this.ctx.fillStyle = "rgb(64,64,64)";
 			this.ctx.fillRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
 			this.ctx.fillStyle = "rgb(255,255,255)";
-		}
-		else if(panel.isSwapping()) {
-			// render swapping
-			var offs = this.theme.panelDimensions.width / 4;
-			offs *= (4 - panel.timer);
-			if(panel.flags & JSPDP.Panel.EFlags.FromLeft) {
-				offs = -this.theme.panelDimensions.width + offs;
-			} else {
-				offs = this.theme.panelDimensions.width - offs;
-			}
-			this.ctx.drawImage(this.theme.panelImages[panel.color], x + offs, y);
 		} else {
 			// render normally
 			this.ctx.drawImage(this.theme.panelImages[panel.color], x, y);
 		}
 	} else {
+		this.ctx.clearRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
+	}
+};
+
+proto.renderSwappingPanel = function(panel) {
+	if(!panel.isAir()) {
 		var x = this.theme.panelDimensions.width * panel.col;
 		var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
-	
-		this.ctx.clearRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
+		var offs = this.theme.panelDimensions.width / 4;
+		offs *= (4 - panel.timer);
+		if(panel.flags & JSPDP.Panel.EFlags.FromLeft) {
+			offs = -this.theme.panelDimensions.width + offs;
+		} else {
+			offs = this.theme.panelDimensions.width - offs;
+		}
+		this.ctx.drawImage(this.theme.panelImages[panel.color], x + offs, y);
 	}
 };
 
@@ -119,13 +120,6 @@ proto.redraw = function() {
 
 proto.onSetPanel = function(panel) {
 	this.renderPanel(panel);
-};
-
-proto.onSwap = function(duo) {
-	duo[0].renderFlags = JSPDP.Panel.EFlags.Swapping;
-	this.animatingPanels.push(duo[0]);
-	duo[1].renderFlags = JSPDP.Panel.EFlags.Swapping;
-	this.animatingPanels.push(duo[1]);
 };
 
 proto.onLand = function(panel) {
@@ -145,6 +139,11 @@ proto.onPop = function(panel) {
 	this.renderPanel(panel);
 };
 
+proto.onSwap = function(panels) {
+	this.swappingPanels.push(panels[0]);
+	this.swappingPanels.push(panels[1]);
+};
+
 proto.runTick = function() {
 	for(var i = 0; i < this.animatingPanels.length; i++) {
 		var panel = this.animatingPanels[i];
@@ -153,14 +152,40 @@ proto.runTick = function() {
 			this.animatingPanels.splice(i--, 1);
 		}
 	}
+	
+	if(this.swappingPanels.length) {
+		// clear them all first...
+		for(var i = 0; i < this.swappingPanels.length; i++) {
+			var panel = this.swappingPanels[i];
+			this.renderPanel(panel);
+			// also redraw stationary panels that may be obstructed by swapping ones
+			var other_panel = this.tableau.getPanel(panel.row, panel.col + (panel.getFlags(JSPDP.Panel.EFlags.FromLeft) ? -1 : 1));
+			if(other_panel && !other_panel.isSwapping()) {
+				this.renderPanel(other_panel);
+			}
+		}
+		// then, draw the swapping panels
+		for(var i = this.swappingPanels.length - 1; i >= 0; i--) {
+			var panel = this.swappingPanels[i];
+			if(panel.isSwapping()) {
+				this.renderSwappingPanel(panel);
+			} else {
+				this.renderPanel(panel);
+				this.swappingPanels.splice(i, 1);
+			}
+		}
+	}
+	
 	++this.tickCount;
 	if((this.tickCount & 0xf) == 0) {
+		var text = "A: " + this.animatingPanels.length;
+		text += " S: " + this.swappingPanels.length;
 		this.ctx.save();
 		this.ctx.strokeStyle = "rgb(64,64,64)";
 		this.ctx.fillStyle = "rgb(255,255,255)";
 		this.ctx.clearRect(0, 0, this.canvas.width, 28);
-		this.ctx.strokeText(this.animatingPanels.length, 2, 18);
-		this.ctx.fillText(this.animatingPanels.length, 2, 18);
+		this.ctx.strokeText(text, 2, 18);
+		this.ctx.fillText(text, 2, 18);
 		this.ctx.restore();
 	}
 };

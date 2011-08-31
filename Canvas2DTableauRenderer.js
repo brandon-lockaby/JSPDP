@@ -180,6 +180,7 @@ proto.runTick = function() {
 	if((this.tickCount & 0xf) == 0) {
 		var text = "A: " + this.animatingPanels.length;
 		text += " S: " + this.swappingPanels.length;
+		text += " C: " + this.tableau.chainLevel;
 		this.ctx.save();
 		this.ctx.strokeStyle = "rgb(64,64,64)";
 		this.ctx.fillStyle = "rgb(255,255,255)";

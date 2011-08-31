@@ -112,14 +112,14 @@ proto.swap = function(row, col, from_left) {
 		&& (!other_above || (other_above && !other_above.isHovering()))
 	) {
 		
-		this.setPanel(row, other_col, panel);
-		this.setPanel(row, col, other_panel);
-		
 		panel.removeFlags(JSPDP.Panel.EFlags.Landing | JSPDP.Panel.EFlags.Falling);
 		other_panel.removeFlags(JSPDP.Panel.EFlags.Landing | JSPDP.Panel.EFlags.Falling);
 		panel.setTimer(JSPDP.Panel.EFlags.Swapping, 3);
 		other_panel.setTimer(JSPDP.Panel.EFlags.Swapping, 3);
 		(from_left ? panel : other_panel).addFlags(JSPDP.Panel.EFlags.FromLeft);
+		
+		this.setPanel(row, other_col, panel);
+		this.setPanel(row, col, other_panel);
 		
 		// bug removal re: sharpobject@gmail.com
 		if(panel.isAir()) {

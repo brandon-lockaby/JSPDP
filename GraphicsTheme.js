@@ -25,36 +25,49 @@ JSPDP.GraphicsTheme = function() {
 var proto = (JSPDP.GraphicsTheme.prototype = {});
 
 proto.init = function() {
-	// events
+
+	// Events
+	
 	this.onload = new JSPDP.Event();
 	
-	// default panel images
+	// Fields
+	
 	this.panelDimensions = {
 		width: 56,
 		height: 56
 	};
-	this.panelImages = [];
-	var panelTex = new Image();
-	panelTex.src = "themes/alpha/panels.png";
 	
-	var render_panels = function() {
+	this.panelImages = [];
+	
+	
+	// load default images
+	
+	var image_paths = [
+		"themes/alpha/panels.png"
+	];
+	var self = this;
+	new JSPDP.ImageLoader().init(image_paths, function(progress) {
+		if(console) console.log("Images loaded: ", progress);
+		
+		// render individual panel images
+		var panels_image = progress.image_map["themes/alpha/panels.png"];
 		for(var i = 0; i < 5; i++) {
 			var c = document.createElement("canvas");
-			c.width = this.panelDimensions.width;
-			c.height = this.panelDimensions.height;
-			c.getContext("2d").drawImage(panelTex,
-				this.panelDimensions.width * i, 0,
-				this.panelDimensions.width, this.panelDimensions.height,
+			c.width = self.panelDimensions.width;
+			c.height = self.panelDimensions.height;
+			c.getContext("2d").drawImage(panels_image,
+				self.panelDimensions.width * i, 0,
+				self.panelDimensions.width, self.panelDimensions.height,
 				0, 0,
-				this.panelDimensions.width, this.panelDimensions.height);
-			this.panelImages[i] = c;
+				self.panelDimensions.width, self.panelDimensions.height);
+			self.panelImages[i] = c;
 		}
-		this.onload.fire();
-	};
-	if(panelTex.complete) {
-		render_panels();
-	} else {
-		panelTex.onload = render_panels.bind(this);
-	}
+		
+		self.onload.fire();
+		
+	}, function(progress) {
+		if(console) console.log("Loading images... ", progress);
+	});
+	
 	return this;
 };

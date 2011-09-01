@@ -43,7 +43,8 @@ proto.init = function() {
 	// load default images
 	
 	var image_paths = [
-		"themes/alpha/panels.png"
+		"themes/alpha/panels.png",
+		"themes/alpha/yellow-duck.png"
 	];
 	var self = this;
 	new JSPDP.ImageLoader().init(image_paths, function(progress) {
@@ -62,6 +63,9 @@ proto.init = function() {
 				self.panelDimensions.width, self.panelDimensions.height);
 			self.panelImages[i] = c;
 		}
+		
+		// test test
+		self.duck = progress.image_map["themes/alpha/yellow-duck.png"];
 		
 		self.onload.fire();
 		

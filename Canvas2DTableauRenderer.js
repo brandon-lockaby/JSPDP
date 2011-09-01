@@ -28,6 +28,7 @@ proto.init = function(tableau, theme) {
 	this.tableau = tableau;
 	this.theme = theme;
 	this.canvas = document.createElement("canvas");
+	this.canvas.className = "tableau";
 	this.canvas.width = this.theme.panelDimensions.width * tableau.dimensions.width;
 	this.canvas.height = this.theme.panelDimensions.height * tableau.dimensions.height;
 	this.ctx = this.canvas.getContext('2d');
@@ -72,13 +73,11 @@ proto.init = function(tableau, theme) {
 	return this;
 }
 
-proto.tickCount = 0;
-
 proto.renderPanel = function(panel) {
 	var x = this.theme.panelDimensions.width * panel.col;
 	var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
 	if(!panel.isAir() && !panel.isPopped() && !panel.isSwapping()) {
-		if(panel.isMatching() && (this.tickCount & 1) && (panel.timer > (this.tableau.durations.match * 0.25))) {
+		if(panel.isMatching() && (this.tableau.tickCount & 1) && (panel.timer > (this.tableau.durations.match * 0.25))) {
 			// render white
 			this.ctx.fillRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
 		} else if(panel.isPopping()) {
@@ -176,8 +175,7 @@ proto.runTick = function() {
 		}
 	}
 	
-	++this.tickCount;
-	if((this.tickCount & 0xf) == 0) {
+	if((this.tableau.tickCount & 0xf) == 0) {
 		var text = "A: " + this.animatingPanels.length;
 		text += " S: " + this.swappingPanels.length;
 		text += " C: " + this.tableau.chainLevel;

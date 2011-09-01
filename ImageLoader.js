@@ -40,8 +40,7 @@ proto.init = function(image_paths, complete_callback, progress_callback) {
 		var image = new Image();
 		image.src = path;
 		if(image.complete) {
-			this.complete++;
-			this.progressed();
+			this.onImage(this, path, image);
 		} else {
 			image.onload = this.onImage.bind(this, path, image);
 			image.onerror = this.onImage.bind(this, path, false);

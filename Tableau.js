@@ -112,8 +112,9 @@ proto.swap = function(row, col, from_left) {
 		&& (!other_above || (other_above && !other_above.isHovering()))
 	) {
 		
-		panel.removeFlags(JSPDP.Panel.EFlags.Landing | JSPDP.Panel.EFlags.Falling);
-		other_panel.removeFlags(JSPDP.Panel.EFlags.Landing | JSPDP.Panel.EFlags.Falling);
+		var remove_flags = JSPDP.Panel.EFlags.Landing | JSPDP.Panel.EFlags.Falling | JSPDP.Panel.EFlags.FromLeft;
+		panel.removeFlags(remove_flags);
+		other_panel.removeFlags(remove_flags);
 		panel.setTimer(JSPDP.Panel.EFlags.Swapping, 3);
 		other_panel.setTimer(JSPDP.Panel.EFlags.Swapping, 3);
 		(from_left ? panel : other_panel).addFlags(JSPDP.Panel.EFlags.FromLeft);

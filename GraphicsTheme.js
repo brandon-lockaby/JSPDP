@@ -44,7 +44,8 @@ proto.init = function() {
 	
 	var image_paths = [
 		"themes/alpha/panels.png",
-		"themes/alpha/yellow-duck.png"
+		"themes/alpha/yellow-duck.png",
+		"themes/alpha/cursor.png"
 	];
 	var self = this;
 	new JSPDP.ImageLoader().init(image_paths, function(progress) {
@@ -65,6 +66,7 @@ proto.init = function() {
 		}
 		
 		// test test
+		self.cursorImage = progress.image_map["themes/alpha/cursor.png"];
 		self.duck = progress.image_map["themes/alpha/yellow-duck.png"];
 		
 		self.onload.fire();

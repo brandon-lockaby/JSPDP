@@ -34,11 +34,11 @@ proto.init = function(tableau, theme) {
 	this.ctx = this.canvas.getContext('2d');
 	this.ctx.font = "16px georgia";
 	
-	this.tableau.onSetPanel.subscribe(this.onSetPanel.bind(this));
-	this.tableau.onSwap.subscribe(this.onSwap.bind(this));
-	this.tableau.onLand.subscribe(this.onLand.bind(this));
-	this.tableau.onCombo.subscribe(this.onCombo.bind(this));
-	this.tableau.onPop.subscribe(this.onPop.bind(this));
+	this.tableau.onSetPanel.subscribe(this.handleSetPanel.bind(this));
+	this.tableau.onSwap.subscribe(this.handleSwap.bind(this));
+	this.tableau.onLand.subscribe(this.handleLand.bind(this));
+	this.tableau.onCombo.subscribe(this.handleCombo.bind(this));
+	this.tableau.onPop.subscribe(this.handlePop.bind(this));
 	
 	this.animatingPanels = [];
 	this.swappingPanels = [];
@@ -65,7 +65,8 @@ proto.init = function(tableau, theme) {
 	
 	var self = this;
 	function animate() {
-		self.runTick();
+		//self.runTick();
+		/* temp */ self.redraw();
 		requestAnimationFrame(animate);
 	}
 	requestAnimationFrame(animate);
@@ -76,6 +77,7 @@ proto.init = function(tableau, theme) {
 proto.renderPanel = function(panel) {
 	var x = this.theme.panelDimensions.width * panel.col;
 	var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
+	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.liftOffset;
 	if(!panel.isAir() && !panel.isPopped() && !panel.isSwapping()) {
 		if(panel.isMatching() && (this.tableau.tickCount & 1) && (panel.timer > (this.tableau.durations.match * 0.25))) {
 			// render white
@@ -98,6 +100,7 @@ proto.renderSwappingPanel = function(panel) {
 	if(!panel.isAir()) {
 		var x = this.theme.panelDimensions.width * panel.col;
 		var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
+		/* temp */ y -= this.theme.panelDimensions.height * this.tableau.liftOffset;
 		var offs = this.theme.panelDimensions.width / 4;
 		offs *= (4 - panel.timer);
 		if(panel.flags & JSPDP.Panel.EFlags.FromLeft) {
@@ -109,41 +112,7 @@ proto.renderSwappingPanel = function(panel) {
 	}
 };
 
-proto.redraw = function() {
-	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	var self = this;
-	this.tableau.eachPanel(function(panel) {
-		self.renderPanel(panel);
-	});
-};
-
-proto.onSetPanel = function(panel) {
-	this.renderPanel(panel);
-};
-
-proto.onLand = function(panel) {
-	panel.renderFlags = JSPDP.Panel.EFlags.Landing;
-	this.animatingPanels.push(panel);
-};
-
-proto.onCombo = function(combo) {
-	for(var i = 0; i < combo.length; i++) {
-		var panel = combo[i];
-		panel.renderFlags = JSPDP.Panel.EFlags.Matching;
-		this.animatingPanels.push(panel);
-	}
-};
-
-proto.onPop = function(panel) {
-	this.renderPanel(panel);
-};
-
-proto.onSwap = function(panels) {
-	this.swappingPanels.push(panels[0]);
-	this.swappingPanels.push(panels[1]);
-};
-
-proto.runTick = function() {
+proto.renderAnimatingPanels = function() {
 	for(var i = 0; i < this.animatingPanels.length; i++) {
 		var panel = this.animatingPanels[i];
 		this.renderPanel(panel);
@@ -151,7 +120,9 @@ proto.runTick = function() {
 			this.animatingPanels.splice(i--, 1);
 		}
 	}
-	
+};
+
+proto.renderSwappingPanels = function() {
 	if(this.swappingPanels.length) {
 		// clear them all first...
 		for(var i = 0; i < this.swappingPanels.length; i++) {
@@ -174,6 +145,46 @@ proto.runTick = function() {
 			}
 		}
 	}
+};
+
+proto.redraw = function() {
+	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	var self = this;
+	this.tableau.eachPanel(function(panel) {
+		self.renderPanel(panel);
+	});
+	this.renderSwappingPanels();
+};
+
+proto.handleSetPanel = function(panel) {
+	this.renderPanel(panel);
+};
+
+proto.handleLand = function(panel) {
+	panel.renderFlags = JSPDP.Panel.EFlags.Landing;
+	this.animatingPanels.push(panel);
+};
+
+proto.handleCombo = function(combo) {
+	for(var i = 0; i < combo.length; i++) {
+		var panel = combo[i];
+		panel.renderFlags = JSPDP.Panel.EFlags.Matching;
+		this.animatingPanels.push(panel);
+	}
+};
+
+proto.handlePop = function(panel) {
+	this.renderPanel(panel);
+};
+
+proto.handleSwap = function(panels) {
+	this.swappingPanels.push(panels[0]);
+	this.swappingPanels.push(panels[1]);
+};
+
+proto.runTick = function() {
+	this.renderAnimatingPanels();
+	this.renderSwappingPanels();
 	
 	if((this.tableau.tickCount & 0xf) == 0) {
 		var text = "A: " + this.animatingPanels.length;

@@ -43,7 +43,14 @@ proto.init = function(tableau) {
 		col: 0
 	};
 	
-	this.tableau.onActionPhase.subscribe(this.onActionPhase.bind(this));
+	this.tableau.onActionPhase.subscribe(this.handleActionPhase.bind(this));
+	
+	if(this.tableau.onRise) {
+		this.tableau.onRise.subscribe(this.handleRise.bind(this));
+	}
+	if(this.tableau.onRow) {
+		this.tableau.onRow.subscribe(this.handleRow.bind(this));
+	}
 	
 	addEventListener('keydown', this.onKeydown.bind(this));
 	addEventListener('keyup', this.onKeyup.bind(this));
@@ -73,7 +80,7 @@ proto.onKeyup = function(event) {
 	}
 };
 
-proto.onActionPhase = function() {
+proto.handleActionPhase = function() {
 	// check if new keys were pressed, first
 	var done = false;
 	for(var i = 0; i < this.buttons.length; i++) {
@@ -140,19 +147,35 @@ proto.perform = function(action) {
 			break;
 	}
 	
+	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.liftOffset);
+	
 	if(this.position.row < 0)
 		this.position.row = 0;
-	else if(this.position.row >= this.tableau.dimensions.height)
-		this.position.row = this.tableau.dimensions.height - 1;
+	else if(this.position.row > top_row) {
+		this.position.row = top_row;
+	}
 	
 	if(this.position.col < 0)
 		this.position.col = 0;
 	else if(this.position.col >= this.tableau.dimensions.width - 1)
 		this.position.col = this.tableau.dimensions.width - 2;
 	
-	if(this.position.row != old_pos.row || this.position.col != old_pos.col) {
+	/*if(this.position.row != old_pos.row || this.position.col != old_pos.col) {
 		// todo: on move...
-	}
+	}*/
+};
+
+proto.handleRise = function() {
+	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.liftOffset);
+	if(this.position.row > top_row)
+		this.position.row = top_row;
+};
+
+proto.handleRow = function() {
+	this.position.row++;
+	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.liftOffset);
+	if(this.position.row > top_row)
+		this.position.row = top_row;
 };
 
 ////

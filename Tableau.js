@@ -31,15 +31,6 @@ JSPDP.Tableau = function() {
 var proto = (JSPDP.Tableau.prototype = {});
 
 proto.init = function(width, height) {
-	this.dimensions = {width: width, height: height};
-	this.panels = new Array(this.dimensions.height);
-	for(var i = 0; i < this.dimensions.height; i++) {
-		this.panels[i] = new Array(this.dimensions.width);
-		for(var j = 0; j < this.dimensions.width; j++) {
-			this.panels[i][j] = new JSPDP.Panel();
-		}
-	}
-	
 	// default durations from EASY difficulty
 	this.durations = {
 		hover : 12,
@@ -59,6 +50,16 @@ proto.init = function(width, height) {
 	this.onCombo = new JSPDP.Event();
 	this.onPop = new JSPDP.Event();
 	
+	this.dimensions = {width: width, height: height};
+	this.panels = new Array(this.dimensions.height);
+	for(var i = 0; i < this.dimensions.height; i++) {
+		this.panels[i] = new Array(this.dimensions.width);
+		for(var j = 0; j < this.dimensions.width; j++) {
+			//this.panels[i][j] = new JSPDP.Panel();
+			this.setPanel(i, j, new JSPDP.Panel());
+		}
+	}
+	
 	return this;
 }
 
@@ -66,7 +67,7 @@ proto.init = function(width, height) {
 
 proto.needsCheckMatches = false;
 proto.chainLevel = 0;
-proto.active = false;
+proto.active = true;
 proto.tickCount = 0;
 
 // Operations
@@ -172,12 +173,8 @@ proto.setHoverers = function(row, col, ticks, flags) {
 };
 
 proto.runTick = function() {
-	// OTODO: decrement stop time (outside of this class)
 	// OTODO: set bounce (outside of this class)
 	// OTODO: set danger music (outside of this class)
-	// OTODO: generate another row if needed (outside of this class)
-	// OTODO: death (outside of this class)
-	// OTODO: natural rise (outisde of this class)
 	
 	this.runFlagsPhase();
 	this.onActionPhase.fire();

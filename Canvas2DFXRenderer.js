@@ -34,7 +34,7 @@ proto.init = function(tableau, theme) {
 	this.ctx = this.canvas.getContext('2d');
 	this.ctx.font = "16px georgia";
 	
-	this.tableau.onPop.subscribe(this.onPop.bind(this));
+	this.tableau.onPop.subscribe(this.handlePop.bind(this));
 	
 	window.requestAnimationFrame = (function(){
 		//Check for each browser
@@ -65,12 +65,12 @@ proto.init = function(tableau, theme) {
 	return this;
 }
 
-proto.onPop = function(panel) {
+proto.handlePop = function(panel) {
 	var x = this.theme.panelDimensions.width * panel.col;
 	var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
 	x += this.theme.panelDimensions.width / 2;
 	y += this.theme.panelDimensions.height / 2;
-	
+	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.liftOffset;
 	for(var i = 0; i < 8; i++) {
 		this.particles.push({
 			b: this.tableau.tickCount,
@@ -100,7 +100,8 @@ proto.redraw = function() {
 		
 		this.ctx.save();
 		this.ctx.globalAlpha = 1 - ((p.t - p.b) / p.l);
-		this.ctx.drawImage(this.theme.duck, p.x, p.y);
+	
+		this.ctx.drawImage(this.theme.duck, p.x, p.y /* temp */ - (this.theme.panelDimensions.height * this.tableau.liftOffset));
 		this.ctx.restore();
 		
 		p.t = this.tableau.tickCount;

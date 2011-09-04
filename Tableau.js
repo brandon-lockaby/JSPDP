@@ -25,7 +25,7 @@
 	any individual gameplay mode, or graphics or audio theme.
 */
 
-JSPDP.Tableau = function(width, height) {
+JSPDP.Tableau = function() {
 }
 
 var proto = (JSPDP.Tableau.prototype = {});

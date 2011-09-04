@@ -147,7 +147,7 @@ proto.perform = function(action) {
 			break;
 	}
 	
-	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.liftOffset);
+	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.riseOffset);
 	
 	if(this.position.row < 0)
 		this.position.row = 0;
@@ -166,14 +166,14 @@ proto.perform = function(action) {
 };
 
 proto.handleRise = function() {
-	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.liftOffset);
+	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.riseOffset);
 	if(this.position.row > top_row)
 		this.position.row = top_row;
 };
 
 proto.handleRow = function() {
 	this.position.row++;
-	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.liftOffset);
+	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.riseOffset);
 	if(this.position.row > top_row)
 		this.position.row = top_row;
 };

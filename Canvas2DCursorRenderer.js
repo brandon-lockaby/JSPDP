@@ -64,6 +64,6 @@ proto.redraw = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	var x = this.theme.panelDimensions.width * this.keyboardController.position.col;
 	var y = this.canvas.height - (this.theme.panelDimensions.height * this.keyboardController.position.row) - this.theme.panelDimensions.height;
-	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.liftOffset;
+	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
 	this.ctx.drawImage(this.theme.cursorImage, x, y);
 };

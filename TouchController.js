@@ -35,6 +35,9 @@ proto.init = function(tableau, element, panel_width, panel_height) {
 	this.panelHeight = panel_height;
 	
 	this.tableau.onActionPhase.subscribe(this.onActionPhase.bind(this));
+	if(this.tableau.onRow) {
+		this.tableau.onRow.subscribe(this.handleRow.bind(this));
+	}
 	addEventListener('mousedown', this.onMousedown.bind(this));
 	addEventListener('mouseup', this.onMouseup.bind(this));
 	addEventListener('mousemove', this.onMousemove.bind(this));
@@ -56,7 +59,7 @@ proto.translatedEvent = function(event) {
 proto.onMousedown = function(event) {
 	var coords = this.translatedEvent(event);
 	var x = Math.floor(coords.x / this.panelWidth);
-	var y = Math.floor(this.tableau.dimensions.height - (coords.y / this.panelHeight));
+	var y = Math.floor(this.tableau.dimensions.height - ((coords.y + (this.panelHeight * this.tableau.riseOffset)) / this.panelHeight));
 	var panel = this.tableau.getPanel(y, x);
 	if(panel) {
 		this.selection = {
@@ -82,7 +85,7 @@ proto.onMousemove = function(event) {
 	if(this.selection) {
 		var coords = this.translatedEvent(event);
 		var x = Math.floor(coords.x / this.panelWidth);
-		var y = Math.floor(this.tableau.dimensions.height - (coords.y / this.panelHeight));
+		var y = Math.floor(this.tableau.dimensions.height - ((coords.y + (this.panelHeight * this.tableau.riseOffset)) / this.panelHeight));
 		this.position = {
 			x : x,
 			y : y
@@ -120,5 +123,14 @@ proto.onActionPhase = function() {
 				}
 			}
 		}
+	}
+};
+
+proto.handleRow = function() {
+	if(this.position) {
+		this.position.y++;
+	}
+	if(this.selection) {
+		this.selection.y++;
 	}
 };

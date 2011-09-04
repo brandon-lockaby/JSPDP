@@ -70,7 +70,7 @@ proto.handlePop = function(panel) {
 	var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
 	x += this.theme.panelDimensions.width / 2;
 	y += this.theme.panelDimensions.height / 2;
-	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.liftOffset;
+	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
 	for(var i = 0; i < 8; i++) {
 		this.particles.push({
 			b: this.tableau.tickCount,
@@ -101,7 +101,7 @@ proto.redraw = function() {
 		this.ctx.save();
 		this.ctx.globalAlpha = 1 - ((p.t - p.b) / p.l);
 	
-		this.ctx.drawImage(this.theme.duck, p.x, p.y /* temp */ - (this.theme.panelDimensions.height * this.tableau.liftOffset));
+		this.ctx.drawImage(this.theme.duck, p.x, p.y /* temp */ - (this.theme.panelDimensions.height * this.tableau.riseOffset));
 		this.ctx.restore();
 		
 		p.t = this.tableau.tickCount;

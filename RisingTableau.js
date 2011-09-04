@@ -33,22 +33,26 @@ proto.init = function(width, height) {
 	
 	this.onCombo.subscribe(this.handleCombo.bind(this));
 	
+	this.rowGenerator = new JSPDP.RowGenerator().init(width);
+	
 	return this;
 }
 
 proto.stopTicks = 0;
 
-proto.liftSpeed = (1 / 60) / 10;
-proto.liftOffset = 0;
-proto.liftJuice = 0;
+proto.riseSpeed = (1 / 60) / 1; // todo
+proto.riseOffset = 0;
+
+proto.liftSpeed = 16 / 60; // todo
+proto.liftJuice = 0; // todo
 
 proto.runTick = function() {
 	if(this.stopTicks > 0) {
 		--this.stopTicks;
 	} else if(!this.active) {
-		this.liftOffset += this.liftSpeed;
-		while(this.liftOffset >= 1) {
-			this.liftOffset -= 1;
+		this.riseOffset += this.riseSpeed;
+		while(this.riseOffset >= 1) {
+			this.riseOffset -= 1;
 			
 			// shift everything up a row
 			for(var row = this.dimensions.height - 1; row > 0; row--) {
@@ -60,11 +64,11 @@ proto.runTick = function() {
 			}
 			
 			// add panels from generated row
-			// todo: this
+			var generated = this.rowGenerator.generate(5); // todo: radix
 			for(var i = 0; i < this.dimensions.width; i++) {
 				var panel = new JSPDP.Panel();
 				panel.type = 1;
-				panel.color = Math.floor(Math.random() * 5);
+				panel.color = generated[i];
 				this.setPanel(0, i, panel);
 			}
 			this.needsCheckMatches = true;

@@ -77,7 +77,7 @@ proto.init = function(tableau, theme) {
 proto.renderPanel = function(panel) {
 	var x = this.theme.panelDimensions.width * panel.col;
 	var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
-	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.liftOffset;
+	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
 	if(!panel.isAir() && !panel.isPopped() && !panel.isSwapping()) {
 		if(panel.isMatching() && (this.tableau.tickCount & 1) && (panel.timer > (this.tableau.durations.match * 0.25))) {
 			// render white
@@ -100,7 +100,7 @@ proto.renderSwappingPanel = function(panel) {
 	if(!panel.isAir()) {
 		var x = this.theme.panelDimensions.width * panel.col;
 		var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
-		/* temp */ y -= this.theme.panelDimensions.height * this.tableau.liftOffset;
+		/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
 		var offs = this.theme.panelDimensions.width / 4;
 		offs *= (4 - panel.timer);
 		if(panel.flags & JSPDP.Panel.EFlags.FromLeft) {

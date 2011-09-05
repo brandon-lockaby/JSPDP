@@ -34,6 +34,7 @@ proto.init = function(width, height) {
 	this.onCombo.subscribe(this.handleCombo.bind(this));
 	
 	this.rowGenerator = new JSPDP.RowGenerator().init(width);
+	this.rowGenerator.generate(5); // todo: radix
 	
 	return this;
 }
@@ -64,14 +65,14 @@ proto.runTick = function() {
 			}
 			
 			// add panels from generated row
-			var generated = this.rowGenerator.generate(5); // todo: radix
 			for(var i = 0; i < this.dimensions.width; i++) {
 				var panel = new JSPDP.Panel();
 				panel.type = 1;
-				panel.color = generated[i];
+				panel.color = this.rowGenerator.current[i];
 				this.setPanel(0, i, panel);
 			}
 			this.needsCheckMatches = true;
+			this.rowGenerator.generate(5); // todo: radix
 			
 			this.onRow.fire();
 		}

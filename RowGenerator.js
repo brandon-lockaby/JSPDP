@@ -54,5 +54,4 @@ proto.generate = function(radix) {
 		);
 		this.current[i] = color;
 	}
-	return this.current;
 };

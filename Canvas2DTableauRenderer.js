@@ -147,6 +147,19 @@ proto.renderSwappingPanels = function() {
 	}
 };
 
+proto.renderGenerator = function() {
+	var y = this.canvas.height;
+	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
+	for(var i = 0; i < this.tableau.dimensions.width; i++) {
+		this.ctx.drawImage(this.theme.panelImages[this.tableau.rowGenerator.current[i]], this.theme.panelDimensions.width * i, y);
+	}
+	this.ctx.save();
+	this.ctx.fillStyle = "rgb(0,0,0)";
+	this.ctx.globalAlpha = 0.6;
+	this.ctx.fillRect(0, y, this.theme.panelDimensions.width * this.tableau.dimensions.width, this.theme.panelDimensions.width);
+	this.ctx.restore();
+};
+
 proto.redraw = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	var self = this;
@@ -154,6 +167,9 @@ proto.redraw = function() {
 		self.renderPanel(panel);
 	});
 	this.renderSwappingPanels();
+	if(this.tableau.rowGenerator && this.tableau.riseOffset > 0) {
+		this.renderGenerator();
+	}
 };
 
 proto.handleSetPanel = function(panel) {

@@ -22,17 +22,14 @@
 JSPDP.Canvas2DTableauRenderer = function() {
 };
 
-var proto = (JSPDP.Canvas2DTableauRenderer.prototype = {});
+var proto = (JSPDP.Canvas2DTableauRenderer.prototype = new JSPDP.TableauUI());
 
-proto.init = function(tableau, theme) {
-	this.tableau = tableau;
-	this.theme = theme;
-	this.canvas = document.createElement("canvas");
-	this.canvas.className = "tableau";
-	this.canvas.width = this.theme.panelDimensions.width * tableau.dimensions.width;
-	this.canvas.height = this.theme.panelDimensions.height * tableau.dimensions.height;
+proto.init = function(settings) {
+	JSPDP.TableauUI.init.call(this, settings);
+	
+	this.canvas = this.createCanvas();
 	this.ctx = this.canvas.getContext('2d');
-	this.ctx.font = "16px georgia";
+	this.ctx.fillStyle = "rgb(255,255,255)";
 	
 	this.tableau.onSetPanel.subscribe(this.handleSetPanel.bind(this));
 	this.tableau.onSwap.subscribe(this.handleSwap.bind(this));
@@ -43,64 +40,32 @@ proto.init = function(tableau, theme) {
 	this.animatingPanels = [];
 	this.swappingPanels = [];
 	
-	this.ctx.fillStyle = "rgb(255,255,255)";
-	
-	
-	window.requestAnimationFrame = (function(){
-		//Check for each browser
-		//@paul_irish function
-		//Globalises this function to work on any browser as each browser has a different namespace for this
-		return  window.requestAnimationFrame   || //Chromium 
-			window.webkitRequestAnimationFrame || //Webkit
-			window.mozRequestAnimationFrame    || //Mozilla Geko
-			window.oRequestAnimationFrame      || //Opera Presto
-			window.msRequestAnimationFrame     || //IE Trident?
-			function(callback, element){ //Fallback function
-				window.setTimeout(callback, 1000 / 45);
-			}
-	})();
-	if(console) console.log(window.requestAnimationFrame);
-	
-	this.redraw();
-	
-	var self = this;
-	function animate() {
-		//self.runTick();
-		/* temp */ self.redraw();
-		requestAnimationFrame(animate);
-	}
-	requestAnimationFrame(animate);
-	
 	return this;
 }
 
 proto.renderPanel = function(panel) {
-	var x = this.theme.panelDimensions.width * panel.col;
-	var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
-	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
+	var canvas_pos = this.canvasPos(panel.row, panel.col);
 	if(!panel.isAir() && !panel.isPopped() && !panel.isSwapping()) {
 		if(panel.isMatching() && (this.tableau.tickCount & 1) && (panel.timer > (this.tableau.durations.match * 0.25))) {
 			// render white
-			this.ctx.fillRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
+			this.ctx.fillRect(canvas_pos.x, canvas_pos.y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
 		} else if(panel.isPopping()) {
 			// render gray
 			this.ctx.fillStyle = "rgb(64,64,64)";
-			this.ctx.fillRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
+			this.ctx.fillRect(canvas_pos.x, canvas_pos.y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
 			this.ctx.fillStyle = "rgb(255,255,255)";
 		} else {
 			// render normally
-			this.ctx.drawImage(this.theme.panelImages[panel.color], x, y);
+			this.ctx.drawImage(this.theme.panelImages[panel.color], canvas_pos.x, canvas_pos.y);
 		}
 	} else {
-		this.ctx.clearRect(x, y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
+		this.ctx.clearRect(canvas_pos.x, canvas_pos.y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
 	}
 };
 
 proto.renderSwappingPanel = function(panel) {
 	if(!panel.isAir()) {
-		var x = this.theme.panelDimensions.width * panel.col;
-		var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
-		/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
+		var canvas_pos = this.canvasPos(panel.row, panel.col);
 		var offs = this.theme.panelDimensions.width / 4;
 		offs *= (4 - panel.timer);
 		if(panel.flags & JSPDP.Panel.EFlags.FromLeft) {
@@ -108,7 +73,7 @@ proto.renderSwappingPanel = function(panel) {
 		} else {
 			offs = this.theme.panelDimensions.width - offs;
 		}
-		this.ctx.drawImage(this.theme.panelImages[panel.color], x + offs, y);
+		this.ctx.drawImage(this.theme.panelImages[panel.color], canvas_pos.x + offs, canvas_pos.y);
 	}
 };
 
@@ -148,28 +113,15 @@ proto.renderSwappingPanels = function() {
 };
 
 proto.renderGenerator = function() {
-	var y = this.canvas.height;
-	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
+	var canvas_pos = this.canvasPos(-1, 0);
 	for(var i = 0; i < this.tableau.dimensions.width; i++) {
-		this.ctx.drawImage(this.theme.panelImages[this.tableau.rowGenerator.current[i]], this.theme.panelDimensions.width * i, y);
+		this.ctx.drawImage(this.theme.panelImages[this.tableau.rowGenerator.current[i]], this.theme.panelDimensions.width * i, canvas_pos.y);
 	}
 	this.ctx.save();
 	this.ctx.fillStyle = "rgb(0,0,0)";
 	this.ctx.globalAlpha = 0.6;
-	this.ctx.fillRect(0, y, this.theme.panelDimensions.width * this.tableau.dimensions.width, this.theme.panelDimensions.width);
+	this.ctx.fillRect(0, canvas_pos.y, this.theme.panelDimensions.width * this.tableau.dimensions.width, this.theme.panelDimensions.width);
 	this.ctx.restore();
-};
-
-proto.redraw = function() {
-	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	var self = this;
-	this.tableau.eachPanel(function(panel) {
-		self.renderPanel(panel);
-	});
-	this.renderSwappingPanels();
-	if(this.tableau.rowGenerator && this.tableau.riseOffset > 0) {
-		this.renderGenerator();
-	}
 };
 
 proto.handleSetPanel = function(panel) {
@@ -198,20 +150,23 @@ proto.handleSwap = function(panels) {
 	this.swappingPanels.push(panels[1]);
 };
 
-proto.runTick = function() {
+// TODO: THESE
+
+proto.redraw = function() {
+	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	var self = this;
+	this.tableau.eachPanel(function(panel) {
+		self.renderPanel(panel);
+	});
+	this.renderSwappingPanels();
+	if(this.tableau instanceof JSPDP.RisingTableau) {
+		this.renderGenerator();
+	}
+};
+
+proto.draw = function(ctx) {
 	this.renderAnimatingPanels();
 	this.renderSwappingPanels();
 	
-	if((this.tableau.tickCount & 0xf) == 0) {
-		var text = "A: " + this.animatingPanels.length;
-		text += " S: " + this.swappingPanels.length;
-		text += " C: " + this.tableau.chainLevel;
-		this.ctx.save();
-		this.ctx.strokeStyle = "rgb(64,64,64)";
-		this.ctx.fillStyle = "rgb(255,255,255)";
-		this.ctx.clearRect(0, 0, this.canvas.width, 28);
-		this.ctx.strokeText(text, 2, 18);
-		this.ctx.fillText(text, 2, 18);
-		this.ctx.restore();
-	}
+	ctx.drawImage(this.canvas, 0, this.riseOffset());
 };

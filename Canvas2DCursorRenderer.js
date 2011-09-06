@@ -22,48 +22,30 @@
 JSPDP.Canvas2DCursorRenderer = function() {
 };
 
-var proto = (JSPDP.Canvas2DCursorRenderer.prototype = {});
+var proto = (JSPDP.Canvas2DCursorRenderer.prototype = new JSPDP.TableauUI());
 
-proto.init = function(tableau, keyboard_controller, theme) {
-	this.tableau = tableau;
-	this.keyboardController = keyboard_controller;
-	this.theme = theme;
-	this.canvas = document.createElement("canvas");
-	this.canvas.className = "cursor";
-	this.canvas.width = this.theme.panelDimensions.width * tableau.dimensions.width;
-	this.canvas.height = this.theme.panelDimensions.height * tableau.dimensions.height;
+proto.init = function(settings) {
+	JSPDP.TableauUI.init.call(this, settings);
+	this.cursor = settings.cursor;
+	
+	this.canvas = this.createCanvas();
 	this.ctx = this.canvas.getContext('2d');
-	this.ctx.font = "16px georgia";
-	
-	window.requestAnimationFrame = (function(){
-		//Check for each browser
-		//@paul_irish function
-		//Globalises this function to work on any browser as each browser has a different namespace for this
-		return  window.requestAnimationFrame   || //Chromium 
-			window.webkitRequestAnimationFrame || //Webkit
-			window.mozRequestAnimationFrame    || //Mozilla Geko
-			window.oRequestAnimationFrame      || //Opera Presto
-			window.msRequestAnimationFrame     || //IE Trident?
-			function(callback, element){ //Fallback function
-				window.setTimeout(callback, 1000 / 45);
-			}
-	})();
-	if(console) console.log(window.requestAnimationFrame);
-	
-	var self = this;
-	function animate() {
-		self.redraw();
-		requestAnimationFrame(animate);
-	}
-	requestAnimationFrame(animate);
 	
 	return this;
 }
 
+// TODO: THESE
+
 proto.redraw = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	var x = this.theme.panelDimensions.width * this.keyboardController.position.col;
-	var y = this.canvas.height - (this.theme.panelDimensions.height * this.keyboardController.position.row) - this.theme.panelDimensions.height;
+	var x = this.theme.panelDimensions.width * this.cursor.position.col;
+	var y = this.canvas.height - (this.theme.panelDimensions.height * this.cursor.position.row) - this.theme.panelDimensions.height;
 	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
 	this.ctx.drawImage(this.theme.cursorImage, x, y);
+};
+
+proto.draw = function() {
+	this.redraw(); // todo: be smart
+	
+	ctx.drawImage(this.canvas, 0, this.riseOffset());
 };

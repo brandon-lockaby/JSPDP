@@ -22,62 +22,32 @@
 JSPDP.Canvas2DFXRenderer = function() {
 };
 
-var proto = (JSPDP.Canvas2DFXRenderer.prototype = {});
+var proto = (JSPDP.Canvas2DFXRenderer.prototype = new JSPDP.TableauUI());
 
 proto.init = function(tableau, theme) {
-	this.tableau = tableau;
-	this.theme = theme;
-	this.canvas = document.createElement("canvas");
-	this.canvas.className = "fx";
-	this.canvas.width = this.theme.panelDimensions.width * tableau.dimensions.width;
-	this.canvas.height = this.theme.panelDimensions.height * tableau.dimensions.height;
+	JSPDP.TableauUI.init.call(this, settings);
+	
+	this.canvas = this.createCanvas();
 	this.ctx = this.canvas.getContext('2d');
-	this.ctx.font = "16px georgia";
 	
 	this.tableau.onPop.subscribe(this.handlePop.bind(this));
 	
-	window.requestAnimationFrame = (function(){
-		//Check for each browser
-		//@paul_irish function
-		//Globalises this function to work on any browser as each browser has a different namespace for this
-		return  window.requestAnimationFrame   || //Chromium 
-			window.webkitRequestAnimationFrame || //Webkit
-			window.mozRequestAnimationFrame    || //Mozilla Geko
-			window.oRequestAnimationFrame      || //Opera Presto
-			window.msRequestAnimationFrame     || //IE Trident?
-			function(callback, element){ //Fallback function
-				window.setTimeout(callback, 1000 / 45);
-			}
-	})();
-	if(console) console.log(window.requestAnimationFrame);
-	
-	var self = this;
-	function animate() {
-		self.redraw();
-		requestAnimationFrame(animate);
-	}
-	requestAnimationFrame(animate);
-	
-	////
 	this.particles = [];
-	////
 	
 	return this;
 }
 
 proto.handlePop = function(panel) {
-	var x = this.theme.panelDimensions.width * panel.col;
-	var y = this.canvas.height - (this.theme.panelDimensions.height * panel.row) - this.theme.panelDimensions.height;
-	x += this.theme.panelDimensions.width / 2;
-	y += this.theme.panelDimensions.height / 2;
-	/* temp */ y -= this.theme.panelDimensions.height * this.tableau.riseOffset;
+	var canvas_pos = this.canvasPos(panel.row, panel.col);
+	canvas_pos.x += this.theme.panelDimensions.width / 2;
+	canvas_pos.y += this.theme.panelDimensions.height / 2;
 	for(var i = 0; i < 8; i++) {
 		this.particles.push({
 			b: this.tableau.tickCount,
 			l: 60,
 			t: this.tableau.tickCount,
-			x: x,
-			y: y,
+			x: canvas_pos.x,
+			y: canvas_pos.y,
 			xv: Math.random() * 5 - 2.5,
 			yv: Math.random() * 10 - 5,
 			xf: 0,
@@ -101,7 +71,7 @@ proto.redraw = function() {
 		this.ctx.save();
 		this.ctx.globalAlpha = 1 - ((p.t - p.b) / p.l);
 	
-		this.ctx.drawImage(this.theme.duck, p.x, p.y /* temp */ - (this.theme.panelDimensions.height * this.tableau.riseOffset));
+		this.ctx.drawImage(this.theme.duck, p.x, p.y);
 		this.ctx.restore();
 		
 		p.t = this.tableau.tickCount;
@@ -109,4 +79,15 @@ proto.redraw = function() {
 			this.particles.splice(i--, 1);
 		}
 	}
+};
+
+// TODO: THESE
+
+proto.draw = function() {
+	if(this.particles.length) { // todo: be smart
+		this.redraw();
+	}
+	
+	var y = (this.tableau instanceof JSPDP.RisingTableau ? -this.tableau.riseOffset : 0);
+	ctx.drawImage(this.canvas, 0, y);
 };

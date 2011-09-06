@@ -22,17 +22,14 @@
 JSPDP.TouchController = function() {
 }
 
-var proto = (JSPDP.TouchController.prototype = {});
+var proto = (JSPDP.TouchController.prototype = new JSPDP.TableauUI());
 
 proto.selection = null;
 proto.position = null;
 proto.lastSwapTick = -9001;
 
-proto.init = function(tableau, element, panel_width, panel_height) {
-	this.tableau = tableau;
-	this.element = element;
-	this.panelWidth = panel_width;
-	this.panelHeight = panel_height;
+proto.init = function(settings) {
+	JSPDP.TableauUI.init.call(this, settings);
 	
 	this.tableau.onActionPhase.subscribe(this.onActionPhase.bind(this));
 	if(this.tableau.onRow) {
@@ -45,32 +42,17 @@ proto.init = function(tableau, element, panel_width, panel_height) {
 	return this;
 };
 
-proto.translatedEvent = function(event) {
-	var offx = 0;
-	var offy = 0;
-	var ele = this.element;
-	do{
-		offx += ele.offsetLeft;
-		offy += ele.offsetTop;
-	} while(ele = ele.offsetParent);
-	return {x : event.pageX - offx, y : event.pageY - offy};
-};
-
 proto.onMousedown = function(event) {
-	var coords = this.translatedEvent(event);
-	var x = Math.floor(coords.x / this.panelWidth);
-	var y = Math.floor(this.tableau.dimensions.height - ((coords.y + (this.panelHeight * this.tableau.riseOffset)) / this.panelHeight));
-	var panel = this.tableau.getPanel(y, x);
+	var canvas_pos = this.translate(event.pageX, event.pageY);
+	canvas_pos.y += this.riseOffset();
+	var tableau_pos = this.tableauPos(canvas_pos.x, canvas_pos.y);
+	var panel = this.tableau.getPanel(tableau_pos.row, tableau_pos.col);
 	if(panel) {
 		this.selection = {
 			panel : panel,
-			x : x,
-			y : y
+			tableau_pos: tableau_pos
 		};
-		this.position = {
-			x : x,
-			y : y
-		};
+		this.tableau = tableau_pos;
 	}
 	else {
 		this.selection = null;
@@ -83,54 +65,48 @@ proto.onMouseup = function(event) {
 	
 proto.onMousemove = function(event) {
 	if(this.selection) {
-		var coords = this.translatedEvent(event);
-		var x = Math.floor(coords.x / this.panelWidth);
-		var y = Math.floor(this.tableau.dimensions.height - ((coords.y + (this.panelHeight * this.tableau.riseOffset)) / this.panelHeight));
-		this.position = {
-			x : x,
-			y : y
-		};
+		var canvas_pos = this.translate(event.pageX, event.pageY);
+		canvas_pos.y += this.riseOffset();
+		this.tableau_pos = this.tableauPos(canvas_pos.x, canvas_pos.y);
 	}
 };
 
 proto.onActionPhase = function() {
-	if(this.selection) {
-		var panel = this.tableau.getPanel(this.selection.y, this.selection.x);
-		if(panel != this.selection.panel) {
-			this.selection = null;
-			return;
-		}
+	if(!this.selection) return;
+	
+	var panel = this.tableau.getPanel(this.selection.tableau_pos.row, this.selection.tableau_pos.col);
+	if(panel != this.selection.panel) {
+		this.selection = null;
+		return;
+	}
+	
+	if(this.lastSwapTick + 3 >= this.tableau.tickCount) return;
+	if(this.tableau_pos.col == this.selection.tableau_pos.col) return;
+	
+	var from_left = this.tableau_pos.col > this.selection.tableau_pos.col;
+	var other_x = this.selection.tableau_pos.col + (from_left ? 1 : -1);
+	var other_panel = this.tableau.getPanel(this.selection.tableau_pos.row, other_x);
+	
+	if(!panel || !other_panel) return;
+	if(panel.isFalling() || other_panel.isFalling()) return;
 		
-		if(this.lastSwapTick + 3 >= this.tableau.tickCount) {
-			return;
-		}
-		
-		if(this.position.x != this.selection.x) {
-			var from_left = this.position.x > this.selection.x;
-			var other_x = this.selection.x + (from_left ? 1 : -1);
-			var other_panel = this.tableau.getPanel(this.selection.y, other_x);
-			
-			if(panel && other_panel) {
-				if(!panel.isFalling() && !other_panel.isFalling()) {
-					if(this.tableau.swap(this.selection.y, this.selection.x, from_left)) {
-						this.lastSwapTick = this.tableau.tickCount;
-						this.selection = {
-							panel : panel,
-							x : other_x,
-							y : this.selection.y
-						};
-					}
-				}
+	if(this.tableau.swap(this.selection.tableau_pos.row, this.selection.tableau_pos.col, from_left)) {
+		this.lastSwapTick = this.tableau.tickCount;
+		this.selection = {
+			panel : panel,
+			tableau_pos: {
+				col : other_x,
+				row : this.selection.tableau_pos.row
 			}
-		}
+		};
 	}
 };
 
 proto.handleRow = function() {
-	if(this.position) {
-		this.position.y++;
+	if(this.tableau_pos) {
+		this.tableau_pos.row++;
 	}
 	if(this.selection) {
-		this.selection.y++;
+		this.selection.tableau_pos.row++;
 	}
 };

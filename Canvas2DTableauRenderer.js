@@ -36,9 +36,13 @@ proto.init = function(settings) {
 	this.tableau.onLand.subscribe(this.handleLand.bind(this));
 	this.tableau.onCombo.subscribe(this.handleCombo.bind(this));
 	this.tableau.onPop.subscribe(this.handlePop.bind(this));
+	if(this.tableau instanceof JSPDP.RisingTableau) {
+		this.tableau.onRow.subscribe(this.handleRow.bind(this));
+	}
 	
 	this.animatingPanels = [];
 	this.swappingPanels = [];
+	this.needsGeneratorRender = false;
 	
 	return this;
 }
@@ -120,7 +124,6 @@ proto.renderSwappingPanels = function() {
 
 proto.renderGenerator = function() {
 	var canvas_pos = this.canvasPos(-1, 0);
-	console.log(canvas_pos);
 	for(var i = 0; i < this.tableau.dimensions.width; i++) {
 		this.ctx.drawImage(this.theme.panelImages[this.tableau.rowGenerator.current[i]], this.theme.panelDimensions.width * i, canvas_pos.y);
 	}
@@ -129,6 +132,7 @@ proto.renderGenerator = function() {
 	this.ctx.globalAlpha = 0.6;
 	this.ctx.fillRect(0, canvas_pos.y, this.theme.panelDimensions.width * this.tableau.dimensions.width, this.theme.panelDimensions.width);
 	this.ctx.restore();
+	this.needsGeneratorRender = false;
 };
 
 proto.handleSetPanel = function(panel) {
@@ -157,6 +161,10 @@ proto.handleSwap = function(panels) {
 	this.swappingPanels.push(panels[1]);
 };
 
+proto.handleRow = function() {
+	this.needsGeneratorRender = true;
+};
+
 // TODO: THESE
 
 proto.refresh = function() {
@@ -174,6 +182,10 @@ proto.refresh = function() {
 proto.update = function() {
 	var updated = this.renderAnimatingPanels();
 	updated |= this.renderSwappingPanels();
+	if(this.needsGeneratorRender) {
+		updated = true;
+		this.renderGenerator();
+	}
 	return updated;
 };
 

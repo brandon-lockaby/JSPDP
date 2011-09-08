@@ -44,14 +44,31 @@ proto.stopTicks = 0;
 proto.riseSpeed = (1 / 60) / 10; // todo
 proto.riseOffset = 0;
 
-proto.liftSpeed = 16 / 60; // todo
+proto.liftSpeed = 1 / 16; // todo
 proto.liftJuice = 0; // todo
 
 proto.runTick = function() {
+	if(this.active) {
+		this.liftJuice = 0; // todo: this will be optional
+	}
+	
+	if(this.liftJuice > 0) {
+		this.stopTicks = 0;
+	}
+	
 	if(this.stopTicks > 0) {
 		--this.stopTicks;
 	} else if(!this.active) {
-		this.riseOffset += this.riseSpeed;
+	
+		if(this.liftJuice > 0) {
+			this.riseOffset += this.liftSpeed;
+			this.liftJuice -= 1 / 16;
+			if(this.liftJuice < 0) this.liftJuice = 0;
+			console.log(this.liftJuice);
+		} else {
+			this.riseOffset += this.riseSpeed;
+		}
+		
 		while(this.riseOffset >= 1) {
 			this.riseOffset -= 1;
 			
@@ -74,6 +91,8 @@ proto.runTick = function() {
 			this.needsCheckMatches = true;
 			this.rowGenerator.generate(5); // todo: radix
 			
+			this.liftJuice = 0;
+			
 			this.onRow.fire();
 		}
 		this.onRise.fire();
@@ -90,5 +109,11 @@ proto.handleCombo = function(combo) {
 		if(this.stopTicks > (60 * 99)) {
 			this.stopTicks = 60 * 99;
 		}
+	}
+};
+
+proto.lift = function() {
+	if(!this.liftJuice) {
+		this.liftJuice = 1;
 	}
 };

@@ -54,6 +54,7 @@ proto.init = function(settings) {
 	
 	addEventListener('keydown', this.onKeydown.bind(this));
 	addEventListener('keyup', this.onKeyup.bind(this));
+	document.onmousedown = function() { return false; }; // workaround for keyup misbehavior
 	
 	// set up rendering
 	this.canvas = this.createCanvas();
@@ -79,6 +80,7 @@ proto.onKeydown = function(event) {
 proto.onKeyup = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {
+			console.log("-------------unpress");
 			this.buttons[i].pressed = false;
 			break;
 		}
@@ -116,6 +118,9 @@ proto.handleActionPhase = function() {
 					if(this.tableau.tickCount - button.lastHandled >= 25) {
 						this.perform(action);
 					}
+				} else if(action == ea.Lift) {
+					console.log("perform lift");
+					this.perform(action);
 				}
 				break;
 			}
@@ -149,6 +154,9 @@ proto.perform = function(action) {
 			this.tableau.swap(this.position.row, this.position.col, true);
 			break;
 		case ea.Lift:
+			if(this.tableau instanceof JSPDP.RisingTableau) {
+				this.tableau.lift();
+			}
 			break;
 	}
 	

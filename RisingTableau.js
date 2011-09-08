@@ -41,7 +41,7 @@ proto.init = function(width, height) {
 
 proto.stopTicks = 0;
 
-proto.riseSpeed = (1 / 60) / 1; // todo
+proto.riseSpeed = (1 / 60) / 10; // todo
 proto.riseOffset = 0;
 
 proto.liftSpeed = 16 / 60; // todo

@@ -29,10 +29,12 @@ proto.position = null;
 proto.lastSwapTick = -9001;
 
 proto.init = function(settings) {
-	JSPDP.TableauUI.init.call(this, settings);
+	JSPDP.TableauUI.prototype.init.call(this, settings);
+	console.log(settings);
+	console.log(this.tableau);
 	
 	this.tableau.onActionPhase.subscribe(this.onActionPhase.bind(this));
-	if(this.tableau.onRow) {
+	if(this.tableau instanceof JSPDP.RisingTableau) {
 		this.tableau.onRow.subscribe(this.handleRow.bind(this));
 	}
 	addEventListener('mousedown', this.onMousedown.bind(this));
@@ -44,7 +46,7 @@ proto.init = function(settings) {
 
 proto.onMousedown = function(event) {
 	var canvas_pos = this.translate(event.pageX, event.pageY);
-	canvas_pos.y += this.riseOffset();
+	canvas_pos.y -= this.riseOffset();
 	var tableau_pos = this.tableauPos(canvas_pos.x, canvas_pos.y);
 	var panel = this.tableau.getPanel(tableau_pos.row, tableau_pos.col);
 	if(panel) {
@@ -52,7 +54,7 @@ proto.onMousedown = function(event) {
 			panel : panel,
 			tableau_pos: tableau_pos
 		};
-		this.tableau = tableau_pos;
+		this.tableau_pos = tableau_pos;
 	}
 	else {
 		this.selection = null;
@@ -66,7 +68,7 @@ proto.onMouseup = function(event) {
 proto.onMousemove = function(event) {
 	if(this.selection) {
 		var canvas_pos = this.translate(event.pageX, event.pageY);
-		canvas_pos.y += this.riseOffset();
+		canvas_pos.y -= this.riseOffset();
 		this.tableau_pos = this.tableauPos(canvas_pos.x, canvas_pos.y);
 	}
 };
@@ -109,4 +111,14 @@ proto.handleRow = function() {
 	if(this.selection) {
 		this.selection.tableau_pos.row++;
 	}
+};
+
+proto.refresh = function() {
+};
+
+proto.update = function() {
+	return false;
+};
+
+proto.draw = function(ctx) {
 };

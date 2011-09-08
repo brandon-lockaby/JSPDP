@@ -24,8 +24,8 @@ JSPDP.Canvas2DFXRenderer = function() {
 
 var proto = (JSPDP.Canvas2DFXRenderer.prototype = new JSPDP.TableauUI());
 
-proto.init = function(tableau, theme) {
-	JSPDP.TableauUI.init.call(this, settings);
+proto.init = function(settings) {
+	JSPDP.TableauUI.prototype.init.call(this, settings);
 	
 	this.canvas = this.createCanvas();
 	this.ctx = this.canvas.getContext('2d');
@@ -33,6 +33,7 @@ proto.init = function(tableau, theme) {
 	this.tableau.onPop.subscribe(this.handlePop.bind(this));
 	
 	this.particles = [];
+	this.lastTick = -1;
 	
 	return this;
 }
@@ -57,7 +58,7 @@ proto.handlePop = function(panel) {
 	}
 };
 
-proto.redraw = function() {
+proto.refresh = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	for(var i = 0; i < this.particles.length; i++) {
 		var p = this.particles[i];
@@ -81,13 +82,15 @@ proto.redraw = function() {
 	}
 };
 
-// TODO: THESE
-
-proto.draw = function() {
-	if(this.particles.length) { // todo: be smart
-		this.redraw();
+proto.update = function() {
+	if(this.tableau.tickCount != this.lastTick) {
+		this.lastTick = this.tableau.tickCount;
+		this.refresh();
+		return true;
 	}
-	
-	var y = (this.tableau instanceof JSPDP.RisingTableau ? -this.tableau.riseOffset : 0);
-	ctx.drawImage(this.canvas, 0, y);
+	return false;
+};
+
+proto.draw = function(ctx) {
+	ctx.drawImage(this.canvas, 0, this.riseOffset());
 };

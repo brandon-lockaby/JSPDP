@@ -22,58 +22,72 @@
 JSPDP.RenderManager = function() {
 };
 
-var proto = (JSPDP.RenderManager.prototype = {});
+var proto = (JSPDP.RenderManager.prototype = new JSPDP.TableauUI());
 
-proto.init = function(renderers) {
+proto.init = function(settings, renderer_classes) {
+	JSPDP.TableauUI.prototype.init.call(this, settings);
+	
+	this.canvas = this.createCanvas();
+	if(this.tableau instanceof JSPDP.RisingTableau) {
+		this.canvas.height -= this.theme.panelDimensions.height;
+	}
+	this.ctx = this.canvas.getContext('2d');
+	
+	settings.element = this.canvas;
+	
 	this.renderers = [];
-	if(typeof(layers) != 'undefined')
-		this.renderers = renderers;
-		
-	this.run = JSPDP.RenderManager.prototype.run.bind(this);
+	if(typeof(renderer_classes) != 'undefined') {
+		for(var i = 0; i < renderer_classes.length; i++) {
+			this.renderers.push(new renderer_classes[i]().init(settings));
+		}
+	}
 	
 	return this;
 };
 
 proto.start = function() {
 	this.running = true;
-	this.redraw();
-	this.run();
+	this.refresh();
+	
+	var requestAnimationFrame = (function(){
+		//Check for each browser
+		//@paul_irish function
+		//Globalises this function to work on any browser as each browser has a different namespace for this
+		return  window.requestAnimationFrame   || //Chromium 
+			window.webkitRequestAnimationFrame || //Webkit
+			window.mozRequestAnimationFrame    || //Mozilla Geko
+			window.oRequestAnimationFrame      || //Opera Presto
+			window.msRequestAnimationFrame     || //IE Trident?
+			function(callback, element){ //Fallback function
+				window.setTimeout(callback, 1000 / 45);
+			}
+	})();
+	var self = this;
+	var run = function() {
+		self.draw();
+		if(self.running) requestAnimationFrame(run);
+	};
+	requestAnimationFrame(run);
 };
 
 proto.stop = function() {
 	this.running = false;
 };
 
-proto.redraw = function() {
+proto.refresh = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	for(var i = 0; i < this.renderers.length; i++) {
 		var renderer = this.renderers[i];
-		renderer.redraw.call(renderer, this.ctx);
+		renderer.refresh();
+		renderer.draw(this.ctx);
 	}
 };
 
 proto.draw = function() {
+	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	for(var i = 0; i < this.renderers.length; i++) {
 		var renderer = this.renderers[i];
-		renderer.draw.call(renderer, this.ctx);
+		renderer.update()
+		renderer.draw(this.ctx);
 	}
-};
-
-proto.requestAnimationFrame = (function(){
-	//Check for each browser
-	//@paul_irish function
-	//Globalises this function to work on any browser as each browser has a different namespace for this
-	return  window.requestAnimationFrame   || //Chromium 
-		window.webkitRequestAnimationFrame || //Webkit
-		window.mozRequestAnimationFrame    || //Mozilla Geko
-		window.oRequestAnimationFrame      || //Opera Presto
-		window.msRequestAnimationFrame     || //IE Trident?
-		function(callback, element){ //Fallback function
-			window.setTimeout(callback, 1000 / 45);
-		}
-})();
-
-proto.run = function() {
-	this.draw();
-	if(this.running) this.requestAnimationFrame(this.run);
 };

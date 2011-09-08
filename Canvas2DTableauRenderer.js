@@ -25,7 +25,7 @@ JSPDP.Canvas2DTableauRenderer = function() {
 var proto = (JSPDP.Canvas2DTableauRenderer.prototype = new JSPDP.TableauUI());
 
 proto.init = function(settings) {
-	JSPDP.TableauUI.init.call(this, settings);
+	JSPDP.TableauUI.prototype.init.call(this, settings);
 	
 	this.canvas = this.createCanvas();
 	this.ctx = this.canvas.getContext('2d');
@@ -78,13 +78,17 @@ proto.renderSwappingPanel = function(panel) {
 };
 
 proto.renderAnimatingPanels = function() {
-	for(var i = 0; i < this.animatingPanels.length; i++) {
-		var panel = this.animatingPanels[i];
-		this.renderPanel(panel);
-		if(!panel.getFlags(panel.renderFlags)) {
-			this.animatingPanels.splice(i--, 1);
+	if(this.animatingPanels.length) {
+		for(var i = 0; i < this.animatingPanels.length; i++) {
+			var panel = this.animatingPanels[i];
+			this.renderPanel(panel);
+			if(!panel.getFlags(panel.renderFlags)) {
+				this.animatingPanels.splice(i--, 1);
+			}
 		}
+		return true;
 	}
+	return false;
 };
 
 proto.renderSwappingPanels = function() {
@@ -109,11 +113,14 @@ proto.renderSwappingPanels = function() {
 				this.swappingPanels.splice(i, 1);
 			}
 		}
+		return true;
 	}
+	return false;
 };
 
 proto.renderGenerator = function() {
 	var canvas_pos = this.canvasPos(-1, 0);
+	console.log(canvas_pos);
 	for(var i = 0; i < this.tableau.dimensions.width; i++) {
 		this.ctx.drawImage(this.theme.panelImages[this.tableau.rowGenerator.current[i]], this.theme.panelDimensions.width * i, canvas_pos.y);
 	}
@@ -152,7 +159,7 @@ proto.handleSwap = function(panels) {
 
 // TODO: THESE
 
-proto.redraw = function() {
+proto.refresh = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	var self = this;
 	this.tableau.eachPanel(function(panel) {
@@ -164,9 +171,12 @@ proto.redraw = function() {
 	}
 };
 
+proto.update = function() {
+	var updated = this.renderAnimatingPanels();
+	updated |= this.renderSwappingPanels();
+	return updated;
+};
+
 proto.draw = function(ctx) {
-	this.renderAnimatingPanels();
-	this.renderSwappingPanels();
-	
 	ctx.drawImage(this.canvas, 0, this.riseOffset());
 };

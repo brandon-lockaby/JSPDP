@@ -22,10 +22,10 @@
 JSPDP.KeyboardController = function() {
 }
 
-var proto = (JSPDP.KeyboardController.prototype = {});
+var proto = (JSPDP.KeyboardController.prototype = new JSPDP.TableauUI());
 
-proto.init = function(tableau) {
-	this.tableau = tableau;
+proto.init = function(settings) {
+	JSPDP.TableauUI.prototype.init.call(this, settings);
 	
 	this.buttons = [];
 	
@@ -54,6 +54,11 @@ proto.init = function(tableau) {
 	
 	addEventListener('keydown', this.onKeydown.bind(this));
 	addEventListener('keyup', this.onKeyup.bind(this));
+	
+	// set up rendering
+	this.canvas = this.createCanvas();
+	console.log(this.canvas);
+	this.ctx = this.canvas.getContext('2d');
 	
 	return this;
 };
@@ -160,15 +165,17 @@ proto.perform = function(action) {
 	else if(this.position.col >= this.tableau.dimensions.width - 1)
 		this.position.col = this.tableau.dimensions.width - 2;
 	
-	/*if(this.position.row != old_pos.row || this.position.col != old_pos.col) {
-		// todo: on move...
-	}*/
+	if(this.position.row != old_pos.row || this.position.col != old_pos.col) {
+		this.moved = true;
+	}
 };
 
 proto.handleRise = function() {
 	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.riseOffset);
-	if(this.position.row > top_row)
+	if(this.position.row > top_row) {
 		this.position.row = top_row;
+		this.moved = true;
+	}
 };
 
 proto.handleRow = function() {
@@ -176,6 +183,7 @@ proto.handleRow = function() {
 	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.riseOffset);
 	if(this.position.row > top_row)
 		this.position.row = top_row;
+	this.moved = true;
 };
 
 ////
@@ -196,4 +204,27 @@ JSPDP.KeyboardController.Button = function(action, key) {
 	
 	this.pressed = false;
 	this.lastHandled = false;
+};
+
+// rendering
+
+this.moved = false;
+
+proto.refresh = function() {
+	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	var canvas_pos = this.canvasPos(this.position.row, this.position.col);
+	this.ctx.drawImage(this.theme.cursorImage, canvas_pos.x, canvas_pos.y);
+};
+
+proto.update = function() {
+	if(this.moved) {
+		this.refresh(); // todo: clear a smaller area?
+		this.moved = false;
+		return true;
+	}
+	return false;
+};
+
+proto.draw = function(ctx) {
+	ctx.drawImage(this.canvas, 0, this.riseOffset());
 };

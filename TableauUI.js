@@ -27,9 +27,7 @@ var proto = (JSPDP.TableauUI.prototype = {});
 proto.init = function(settings) {
 	this.tableau = settings.tableau;
 	this.theme = settings.theme;
-	if(settings.element) {
-		this.element = settings.element;
-	}
+	this.element = settings.element;
 	
 	return this;
 };
@@ -37,7 +35,7 @@ proto.init = function(settings) {
 proto.createCanvas = function() {
 	var canvas = document.createElement("canvas");
 	canvas.width = this.theme.panelDimensions.width * this.tableau.dimensions.width;
-	canvas.height == this.theme.panelDimensions.height * this.tableau.dimensions.height;
+	canvas.height = this.theme.panelDimensions.height * this.tableau.dimensions.height;
 	if(this.tableau instanceof JSPDP.RisingTableau) {
 		canvas.height += this.theme.panelDimensions.height;
 	}
@@ -45,21 +43,22 @@ proto.createCanvas = function() {
 };
 
 proto.canvasPos = function(row, col) {
+	var y = (this.theme.panelDimensions.height * this.tableau.dimensions.height) - (this.theme.panelDimensions.height * (row + 1));
 	return {
 		x: this.theme.panelDimensions.width * col,
-		y: -(this.theme.panelDimensions.height * row) - this.theme.panelDimensions.height
+		y: y
 	}
 };
 
 proto.tableauPos = function(x, y) {
 	return {
-		row: Math.floor(y / this.theme.panelDimensions.height),
-		col: Math.floor(x / this.theme.panelDimensions.height)
+		row: this.tableau.dimensions.height - 1 - Math.floor(y / this.theme.panelDimensions.height),
+		col: Math.floor(x / this.theme.panelDimensions.width)
 	};
 };
 
 proto.riseOffset = function() {
-	return this.tableau instanceof JSPDP.RisingTableau ? this.theme.panelDimensions.height * this.tableau.riseOffset : 0;
+	return this.tableau instanceof JSPDP.RisingTableau ? -(this.theme.panelDimensions.height * this.tableau.riseOffset) : 0;
 };
 
 proto.translate = function(x, y) {

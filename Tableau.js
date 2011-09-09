@@ -397,7 +397,7 @@ proto.runMatchPhase = function() {
 					panel.removeFlags(JSPDP.Panel.EFlags.Landing);
 					panel.comboSize = combo_size;
 					panel.comboIndex = combo_index;
-					panel.chainIndex = this.chainLevel;
+					panel.chainIndex = is_chain ? this.chainLevel : 0;
 					combo.push(panel);
 					++combo_index;
 				}

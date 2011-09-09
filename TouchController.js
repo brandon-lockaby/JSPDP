@@ -30,8 +30,6 @@ proto.lastSwapTick = -9001;
 
 proto.init = function(settings) {
 	JSPDP.TableauUI.prototype.init.call(this, settings);
-	console.log(settings);
-	console.log(this.tableau);
 	
 	this.tableau.onActionPhase.subscribe(this.onActionPhase.bind(this));
 	if(this.tableau instanceof JSPDP.RisingTableau) {

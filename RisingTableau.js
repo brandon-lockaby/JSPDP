@@ -64,7 +64,6 @@ proto.runTick = function() {
 			this.riseOffset += this.liftSpeed;
 			this.liftJuice -= 1 / 16;
 			if(this.liftJuice < 0) this.liftJuice = 0;
-			console.log(this.liftJuice);
 		} else {
 			this.riseOffset += this.riseSpeed;
 		}

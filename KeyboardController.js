@@ -58,7 +58,6 @@ proto.init = function(settings) {
 	
 	// set up rendering
 	this.canvas = this.createCanvas();
-	console.log(this.canvas);
 	this.ctx = this.canvas.getContext('2d');
 	
 	return this;
@@ -80,7 +79,6 @@ proto.onKeydown = function(event) {
 proto.onKeyup = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {
-			console.log("-------------unpress");
 			this.buttons[i].pressed = false;
 			break;
 		}
@@ -119,7 +117,6 @@ proto.handleActionPhase = function() {
 						this.perform(action);
 					}
 				} else if(action == ea.Lift) {
-					console.log("perform lift");
 					this.perform(action);
 				}
 				break;

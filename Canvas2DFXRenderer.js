@@ -154,8 +154,8 @@ proto.refresh = function() {
 	for(var i = 0; i < this.cards.length; i++) {
 		var card = this.cards[i];
 		var ticks = this.tableau.tickCount - card.born;
-		var offset = Math.sin((ticks / life) * (Math.PI / 2)) * (this.theme.panelDimensions.height * 0.75);
-		this.ctx.drawImage(card.canvas, card.canvas_pos.x, card.canvas_pos.y - offset);
+		var offset = -1 - Math.sin((ticks / life) * (Math.PI / 2)) * (this.theme.panelDimensions.height * 0.75);
+		this.ctx.drawImage(card.canvas, card.canvas_pos.x, card.canvas_pos.y + offset);
 		if(this.tableau.tickCount > card.born + life) {
 			this.cards.splice(i--, 1);
 		}

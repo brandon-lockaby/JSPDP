@@ -65,8 +65,8 @@ proto.handleCombo = function(combo) {
 	var combo_size = combo[0].comboSize;
 	var chain_size = combo[0].chainIndex;
 	var offset = 0;
-	if(combo_size > 3) {
-		var text = combo_size;
+	if(chain_size > 1) {
+		var text = "x" + chain_size;
 		var canvas = document.createElement("canvas");
 		var ctx = canvas.getContext("2d");
 		canvas.height = this.theme.panelDimensions.height;
@@ -79,7 +79,7 @@ proto.handleCombo = function(combo) {
 		ctx.textBaseline = "top";
 		ctx.lineWidth = this.theme.panelDimensions.width * 0.08;
 		//if(canvas.width < this.theme.panelWidth) canvas.width = this.theme.panelWidth;
-		ctx.fillStyle = "red";
+		ctx.fillStyle = "green";
 		ctx.strokeStyle = "white";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.strokeRect(0, 0, canvas.width, canvas.height);
@@ -94,8 +94,8 @@ proto.handleCombo = function(combo) {
 		};
 		this.cards.push(card);
 	}
-	if(chain_size > 1) {
-		var text = "x" + chain_size;
+	if(combo_size > 3) {
+		var text = combo_size;
 		var canvas = document.createElement("canvas");
 		var ctx = canvas.getContext("2d");
 		canvas.height = this.theme.panelDimensions.height;
@@ -107,7 +107,7 @@ proto.handleCombo = function(combo) {
 		ctx.textBaseline = "top";
 		ctx.lineWidth = this.theme.panelDimensions.width * 0.08;
 		//if(canvas.width < this.theme.panelWidth) canvas.width = this.theme.panelWidth;
-		ctx.fillStyle = "green";
+		ctx.fillStyle = "red";
 		ctx.strokeStyle = "white";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.strokeRect(0, 0, canvas.width, canvas.height);

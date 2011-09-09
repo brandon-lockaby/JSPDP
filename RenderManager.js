@@ -42,6 +42,8 @@ proto.init = function(settings, renderer_classes) {
 		}
 	}
 	
+	this.lastTick = this.tableau.tickCount;
+	
 	return this;
 };
 
@@ -84,10 +86,13 @@ proto.refresh = function() {
 };
 
 proto.draw = function() {
-	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-	for(var i = 0; i < this.renderers.length; i++) {
-		var renderer = this.renderers[i];
-		renderer.update()
-		renderer.draw(this.ctx);
+	if(this.tableau.tickCount != this.lastTick) {
+		this.lastTick = this.tableau.tickCount;
+		this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		for(var i = 0; i < this.renderers.length; i++) {
+			var renderer = this.renderers[i];
+			renderer.update()
+			renderer.draw(this.ctx);
+		}
 	}
 };

@@ -31,9 +31,12 @@ proto.init = function(settings) {
 	this.ctx = this.canvas.getContext('2d');
 	
 	this.tableau.onPop.subscribe(this.handlePop.bind(this));
+	this.tableau.onCombo.subscribe(this.handleCombo.bind(this));
 	
 	this.particles = [];
 	this.lastTick = -1;
+	
+	this.cards = [];
 	
 	return this;
 }
@@ -55,6 +58,70 @@ proto.handlePop = function(panel) {
 			yf: 0.1,
 			d: 0.99
 		});
+	}
+};
+
+proto.handleCombo = function(combo) {
+	var combo_size = combo[0].comboSize;
+	var chain_size = combo[0].chainIndex;
+	var offset = 0;
+	if(combo_size > 3) {
+		var text = combo_size;
+		var canvas = document.createElement("canvas");
+		var ctx = canvas.getContext("2d");
+		canvas.height = this.theme.panelDimensions.height;
+		var font = Math.floor(this.theme.panelDimensions.height * 0.8) + "px Arial";
+		ctx.font = font;
+		var width = ctx.measureText(text).width + (this.theme.panelDimensions.width * 0.2);
+		offset += width;
+		canvas.width = width;
+		ctx.font = font;
+		ctx.textBaseline = "top";
+		ctx.lineWidth = this.theme.panelDimensions.width * 0.08;
+		//if(canvas.width < this.theme.panelWidth) canvas.width = this.theme.panelWidth;
+		ctx.fillStyle = "red";
+		ctx.strokeStyle = "white";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.strokeRect(0, 0, canvas.width, canvas.height);
+		ctx.fillStyle = "white";
+		ctx.fillText(text, this.theme.panelDimensions.width * 0.1, this.theme.panelDimensions.height * 0.1);
+		
+		var canvas_pos = this.canvasPos(combo[0].row, combo[0].col);
+		var card = {
+			canvas: canvas,
+			canvas_pos: canvas_pos,
+			born: this.tableau.tickCount
+		};
+		this.cards.push(card);
+	}
+	if(chain_size > 1) {
+		var text = "x" + chain_size;
+		var canvas = document.createElement("canvas");
+		var ctx = canvas.getContext("2d");
+		canvas.height = this.theme.panelDimensions.height;
+		var font = Math.floor(this.theme.panelDimensions.height * 0.8) + "px Arial";
+		ctx.font = font;
+		var width = ctx.measureText(text).width + (this.theme.panelDimensions.width * 0.2);
+		canvas.width = width;
+		ctx.font = font;
+		ctx.textBaseline = "top";
+		ctx.lineWidth = this.theme.panelDimensions.width * 0.08;
+		//if(canvas.width < this.theme.panelWidth) canvas.width = this.theme.panelWidth;
+		ctx.fillStyle = "green";
+		ctx.strokeStyle = "white";
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+		ctx.strokeRect(0, 0, canvas.width, canvas.height);
+		ctx.fillStyle = "white";
+		ctx.fillText(text, this.theme.panelDimensions.width * 0.1, this.theme.panelDimensions.height * 0.1);
+		
+		var canvas_pos = this.canvasPos(combo[0].row, combo[0].col);
+		canvas_pos.x += offset;
+		var card = {
+			canvas: canvas,
+			canvas_pos: canvas_pos,
+			born: this.tableau.tickCount
+		};
+		this.cards.push(card);
 	}
 };
 
@@ -80,6 +147,21 @@ proto.refresh = function() {
 			this.particles.splice(i--, 1);
 		}
 	}
+	
+	this.ctx.save();
+	this.ctx.globalAlpha = 0.75;
+	var life = 60;
+	for(var i = 0; i < this.cards.length; i++) {
+		var card = this.cards[i];
+		var ticks = this.tableau.tickCount - card.born;
+		var offset = Math.sin((ticks / life) * (Math.PI / 2)) * (this.theme.panelDimensions.height * 0.75);
+		this.ctx.drawImage(card.canvas, card.canvas_pos.x, card.canvas_pos.y - offset);
+		if(this.tableau.tickCount > card.born + life) {
+			this.cards.splice(i--, 1);
+		}
+	}
+	this.ctx.restore();
+	
 };
 
 proto.update = function() {

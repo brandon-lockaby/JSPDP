@@ -52,8 +52,8 @@ proto.init = function(settings) {
 		this.tableau.onRow.subscribe(this.handleRow.bind(this));
 	}
 	
-	addEventListener('keydown', this.onKeydown.bind(this));
-	addEventListener('keyup', this.onKeyup.bind(this));
+	addEventListener('keydown', this.onKeydown.bind(this), false);
+	addEventListener('keyup', this.onKeyup.bind(this), false);
 	document.onmousedown = function() { return false; }; // workaround for keyup misbehavior
 	
 	// set up rendering

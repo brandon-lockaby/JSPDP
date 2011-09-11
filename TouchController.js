@@ -35,9 +35,9 @@ proto.init = function(settings) {
 	if(this.tableau instanceof JSPDP.RisingTableau) {
 		this.tableau.onRow.subscribe(this.handleRow.bind(this));
 	}
-	addEventListener('mousedown', this.onMousedown.bind(this));
-	addEventListener('mouseup', this.onMouseup.bind(this));
-	addEventListener('mousemove', this.onMousemove.bind(this));
+	addEventListener('mousedown', this.onMousedown.bind(this), false);
+	addEventListener('mouseup', this.onMouseup.bind(this), false);
+	addEventListener('mousemove', this.onMousemove.bind(this), false);
 	
 	return this;
 };

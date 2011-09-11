@@ -24,11 +24,12 @@ JSPDP.GraphicsTheme = function() {
 
 var proto = (JSPDP.GraphicsTheme.prototype = {});
 
-proto.init = function() {
+proto.init = function(handle_load) {
 
 	// Events
 	
 	this.onload = new JSPDP.Event();
+	this.onload.subscribe(handle_load);
 	
 	// Fields
 	

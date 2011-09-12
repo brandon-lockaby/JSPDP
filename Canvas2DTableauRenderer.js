@@ -125,7 +125,7 @@ proto.renderSwappingPanels = function() {
 proto.renderGenerator = function() {
 	var canvas_pos = this.canvasPos(-1, 0);
 	for(var i = 0; i < this.tableau.dimensions.width; i++) {
-		this.ctx.drawImage(this.theme.panelImages[this.tableau.rowGenerator.current[i]], this.theme.panelDimensions.width * i, canvas_pos.y);
+		this.ctx.drawImage(this.theme.panelImages[this.tableau.generator.current[i]], this.theme.panelDimensions.width * i, canvas_pos.y);
 	}
 	this.ctx.save();
 	this.ctx.fillStyle = "rgb(0,0,0)";

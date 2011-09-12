@@ -33,8 +33,8 @@ proto.init = function(width, height) {
 	
 	this.onCombo.subscribe(this.handleCombo.bind(this));
 	
-	this.rowGenerator = new JSPDP.RowGenerator().init(width);
-	this.rowGenerator.generate(5); // todo: radix
+	this.generator = new JSPDP.Generator().init(width);
+	this.generator.generateRow(5); // todo: radix
 	
 	return this;
 }
@@ -84,11 +84,11 @@ proto.runTick = function() {
 			for(var i = 0; i < this.dimensions.width; i++) {
 				var panel = new JSPDP.Panel();
 				panel.type = 1;
-				panel.color = this.rowGenerator.current[i];
+				panel.color = this.generator.current[i];
 				this.setPanel(0, i, panel);
 			}
 			this.needsCheckMatches = true;
-			this.rowGenerator.generate(5); // todo: radix
+			this.generator.generateRow(5); // todo: radix
 			
 			this.liftJuice = 0;
 			

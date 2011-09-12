@@ -19,10 +19,10 @@
 
 */
 
-JSPDP.RowGenerator = function() {
+JSPDP.Generator = function() {
 }
 
-var proto = (JSPDP.RowGenerator.prototype = {});
+var proto = (JSPDP.Generator.prototype = {});
 
 proto.init = function(width) {
 	this.width = width;
@@ -41,7 +41,7 @@ proto.init = function(width) {
 	return this;
 };
 
-proto.generate = function(radix) {
+proto.generateRow = function(radix) {
 	this.history[1] = this.history[0];
 	this.history[0] = this.current;
 	for(var i = 0; i < this.width; i++) {

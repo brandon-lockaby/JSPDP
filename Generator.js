@@ -55,3 +55,75 @@ proto.generateRow = function(radix) {
 		this.current[i] = color;
 	}
 };
+
+proto.generateField = function(radix, total, max_height, wrapped) {
+	var columns = [];
+	for(var i = 0; i < this.width; i++) {
+		columns.push([]);
+	}
+	
+	var sg = function(arr, i) {
+		if(typeof arr != 'object') return undefined;
+		if(typeof arr.length == 'undefined') return undefined;
+		if(i < 0) i = arr.length + i;
+		if(i < 0) return undefined;
+		if(arr.length <= i) return undefined;
+		return arr[i];
+	};
+	var sgp = sg;
+	if(!wrapped) {
+		sgp = function(arr, i) {
+			if(i < 0) return undefined;
+			return sg(arr, i);
+		};
+	}
+	
+	for(var i = 0; i < total; i++) {
+		var col = Math.floor(Math.random() * this.width);
+		var column = columns[col];
+		if(column.length >= max_height) {
+			--i;
+			continue;
+		}
+		
+		var row = -(column.length + 1);
+		var a = sg(sgp(columns, col - 2), row);
+		var b = sg(sgp(columns, col - 1), row);
+		var c = sg(sgp(columns, col + 1), row);
+		var d = sg(sgp(columns, col + 2), row);
+		
+		var color;
+		do {
+			color = Math.floor(Math.random() * radix);
+		} while(
+			(sg(column, 0) == color && sg(column, 1) == color)
+			|| (a == b && b == color)
+			|| (b == color && c == color)
+			|| (c == color && d == color)
+		);
+		column.unshift(color);
+	}
+	
+	var rows = [];
+	for(var i = 0; i < max_height; i++) {
+		var row = []
+		for(var c = 0; c < this.width; c++) {
+			row.push(sg(columns[c], -(i + 1)));
+		}
+		rows.push(row);
+	}
+	
+	this.history[1] = rows[2];
+	this.history[0] = rows[1];
+	this.current = rows[0];
+	
+	return rows;
+};
+
+proto.generateFieldTA = function(radix) {
+	return this.generateField(radix, 30, 6, false);
+};
+
+proto.generateFieldPDPDS = function(radix) {
+	return this.generateField(radix, 24, 5, false);
+};

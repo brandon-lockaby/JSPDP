@@ -34,6 +34,17 @@ proto.init = function(width, height) {
 	this.onCombo.subscribe(this.handleCombo.bind(this));
 	
 	this.generator = new JSPDP.Generator().init(width);
+	var rows = this.generator.generateFieldTA(5); // todo
+	for(var row = 0; row < rows.length; row++) {
+		for(var col = 0; col < this.dimensions.width; col++) {
+			if(rows[row][col] != undefined) {
+				var panel = new JSPDP.Panel();
+				panel.color = rows[row][col];
+				panel.type = 1;
+				this.setPanel(row, col, panel);
+			}
+		}
+	}
 	this.generator.generateRow(5); // todo: radix
 	
 	return this;

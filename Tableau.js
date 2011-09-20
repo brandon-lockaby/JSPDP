@@ -78,7 +78,7 @@ proto.bounds = function(row, col) {
 
 proto.getPanel = function(row, col) {
 	if(!this.bounds(row, col)) {
-		if(console) console.log("getPanel out of bounds", row, col);
+		//if(console) console.log("getPanel out of bounds", row, col);
 		return null;
 	}
 	return this.panels[row][col];
@@ -125,27 +125,27 @@ proto.swap = function(row, col, from_left) {
 		
 		// bug removal re: sharpobject@gmail.com
 		if(panel.isAir()) {
-			if(!other_above.isAir()) other_above.addFlags(JSPDP.Panel.EFlags.DontSwap);
+			if(!other_above.isAir()) other_above.addFlags(JSPDP.Panel.EFlags.DontSwap), other_above.debug = 1;
 		} else if(other_panel.isAir()) {
-			if(!above.isAir()) above.addFlags(JSPDP.Panel.EFlags.DontSwap);
+			if(!above.isAir()) above.addFlags(JSPDP.Panel.EFlags.DontSwap), above.debug = 2;
 		}
 		var below = this.getPanel(row - 1, col);
 		var other_below = this.getPanel(row - 1, other_col);
 		if(!panel.isAir()) {
-			if(other_below && other_below.isAir()) other_below.addFlags(JSPDP.Panel.EFlags.DontSwap);
+			if(other_below && other_below.isAir()) other_below.addFlags(JSPDP.Panel.EFlags.DontSwap), other_below.debug = 3;
 		}
 		if(!other_panel.isAir()) {
-			if(below && below.isAir()) below.addFlags(JSPDP.Panel.EFlags.DontSwap);
+			if(below && below.isAir()) below.addFlags(JSPDP.Panel.EFlags.DontSwap), below.debug = 4;
 		}
 		
 		if(row > 0) {
 			var panel_below = this.getPanel(row - 1, col);
 			if(panel_below && (panel_below.isAir() || panel_below.isFalling())) {
-				other_panel.addFlags(JSPDP.Panel.EFlags.DontSwap);
+				other_panel.addFlags(JSPDP.Panel.EFlags.DontSwap), other_panel.debug = 5;
 			}
 			panel_below = this.getPanel(row - 1, other_col);
 			if(panel_below && (panel_below.isAir() || panel_below.isFalling())) {
-				panel.addFlags(JSPDP.Panel.EFlags.DontSwap);
+				panel.addFlags(JSPDP.Panel.EFlags.DontSwap), panel.debug = 6;
 			}
 		}
 		

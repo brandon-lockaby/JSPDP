@@ -31,6 +31,8 @@ proto.lastSwapTick = -9001;
 proto.init = function(settings) {
 	JSPDP.TableauUI.prototype.init.call(this, settings);
 	
+	this.onSelect = new JSPDP.Event();
+	
 	this.tableau.onActionPhase.subscribe(this.onActionPhase.bind(this));
 	if(this.tableau instanceof JSPDP.RisingTableau) {
 		this.tableau.onRow.subscribe(this.handleRow.bind(this));
@@ -53,6 +55,7 @@ proto.onMousedown = function(event) {
 			tableau_pos: tableau_pos
 		};
 		this.tableau_pos = tableau_pos;
+		this.onSelect.fire(this.selection);
 	}
 	else {
 		this.selection = null;

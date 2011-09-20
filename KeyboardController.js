@@ -63,6 +63,14 @@ proto.init = function(settings) {
 	return this;
 };
 
+proto.moveTo = function(row, col) {
+	if(!this.tableau.bounds(row, col)) return false;
+	this.position.row = row;
+	this.position.col = col;
+	this.moved = true;
+	return true;
+};
+
 proto.onKeydown = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {

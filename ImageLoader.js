@@ -50,7 +50,8 @@ proto.init = function(image_paths, complete_callback, progress_callback) {
 	}
 };
 
-proto.abort = function() {
+// todo:
+/*proto.abort = function() {
 	var ef = function() {};
 	this.complete_callback = ef;
 	this.progress_callback = ef;
@@ -62,7 +63,7 @@ proto.abort = function() {
 			image.onerror = ef;
 		}
 	}
-};
+};*/
 
 proto.getProgress = function() {
 	return {

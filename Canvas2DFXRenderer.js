@@ -72,7 +72,7 @@ proto.handleCombo = function(combo) {
 		canvas.height = this.theme.panelDimensions.height;
 		var font = Math.floor(this.theme.panelDimensions.height * 0.8) + "px Arial";
 		ctx.font = font;
-		var width = ctx.measureText(text).width + (this.theme.panelDimensions.width * 0.2);
+		var width = ctx.measureText(text).width + (this.theme.panelDimensions.width * 0.6);
 		offset += width;
 		canvas.width = width;
 		ctx.font = font;
@@ -84,7 +84,7 @@ proto.handleCombo = function(combo) {
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.strokeRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = "white";
-		ctx.fillText(text, this.theme.panelDimensions.width * 0.1, this.theme.panelDimensions.height * 0.1);
+		ctx.fillText(text, this.theme.panelDimensions.width * 0.3, this.theme.panelDimensions.height * 0.08);
 		
 		var canvas_pos = this.canvasPos(combo[0].row, combo[0].col);
 		var card = {
@@ -101,7 +101,7 @@ proto.handleCombo = function(combo) {
 		canvas.height = this.theme.panelDimensions.height;
 		var font = Math.floor(this.theme.panelDimensions.height * 0.8) + "px Arial";
 		ctx.font = font;
-		var width = ctx.measureText(text).width + (this.theme.panelDimensions.width * 0.2);
+		var width = ctx.measureText(text).width + (this.theme.panelDimensions.width * 0.6);
 		canvas.width = width;
 		ctx.font = font;
 		ctx.textBaseline = "top";
@@ -112,7 +112,7 @@ proto.handleCombo = function(combo) {
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.strokeRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = "white";
-		ctx.fillText(text, this.theme.panelDimensions.width * 0.1, this.theme.panelDimensions.height * 0.1);
+		ctx.fillText(text, this.theme.panelDimensions.width * 0.3, this.theme.panelDimensions.height * 0.08);
 		
 		var canvas_pos = this.canvasPos(combo[0].row, combo[0].col);
 		canvas_pos.x += offset;
@@ -149,7 +149,7 @@ proto.refresh = function() {
 	}
 	
 	this.ctx.save();
-	this.ctx.globalAlpha = 0.75;
+	this.ctx.globalAlpha = 0.5;
 	var life = 60;
 	for(var i = 0; i < this.cards.length; i++) {
 		var card = this.cards[i];

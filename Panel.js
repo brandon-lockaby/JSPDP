@@ -41,6 +41,10 @@ proto.decrementTimer = function() {
 		--this.timer;
 	}
 };
+
+proto.resetFlags = function(flags) {
+	this.flags = flags;
+};
 	
 proto.removeFlags = function(flags) {
 	this.flags &= ~flags;

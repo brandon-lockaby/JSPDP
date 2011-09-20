@@ -125,27 +125,27 @@ proto.swap = function(row, col, from_left) {
 		
 		// bug removal re: sharpobject@gmail.com
 		if(panel.isAir()) {
-			if(!other_above.isAir()) other_above.addFlags(JSPDP.Panel.EFlags.DontSwap), other_above.debug = 1;
+			if(!other_above.isAir()) other_above.addFlags(JSPDP.Panel.EFlags.DontSwap);
 		} else if(other_panel.isAir()) {
-			if(!above.isAir()) above.addFlags(JSPDP.Panel.EFlags.DontSwap), above.debug = 2;
+			if(!above.isAir()) above.addFlags(JSPDP.Panel.EFlags.DontSwap);
 		}
 		var below = this.getPanel(row - 1, col);
 		var other_below = this.getPanel(row - 1, other_col);
 		if(!panel.isAir()) {
-			if(other_below && other_below.isAir()) other_below.addFlags(JSPDP.Panel.EFlags.DontSwap), other_below.debug = 3;
+			if(other_below && other_below.isAir()) other_below.addFlags(JSPDP.Panel.EFlags.DontSwap);
 		}
 		if(!other_panel.isAir()) {
-			if(below && below.isAir()) below.addFlags(JSPDP.Panel.EFlags.DontSwap), below.debug = 4;
+			if(below && below.isAir()) below.addFlags(JSPDP.Panel.EFlags.DontSwap);
 		}
 		
 		if(row > 0) {
 			var panel_below = this.getPanel(row - 1, col);
 			if(panel_below && (panel_below.isAir() || panel_below.isFalling())) {
-				other_panel.addFlags(JSPDP.Panel.EFlags.DontSwap), other_panel.debug = 5;
+				other_panel.addFlags(JSPDP.Panel.EFlags.DontSwap);
 			}
 			panel_below = this.getPanel(row - 1, other_col);
 			if(panel_below && (panel_below.isAir() || panel_below.isFalling())) {
-				panel.addFlags(JSPDP.Panel.EFlags.DontSwap), panel.debug = 6;
+				panel.addFlags(JSPDP.Panel.EFlags.DontSwap);
 			}
 		}
 		
@@ -166,7 +166,7 @@ proto.setHoverers = function(row, col, ticks, flags) {
 			ticks += panel.timer;
 		}
 		// note: hovering removes other flags such as DontSwap
-		panel.flags = flags | panel.getFlags(JSPDP.Panel.EFlags.Chaining);
+		panel.resetFlags(flags | panel.getFlags(JSPDP.Panel.EFlags.Chaining));
 		panel.setTimer(JSPDP.Panel.EFlags.Hovering, ticks);
 		++row;
 	}
@@ -192,11 +192,16 @@ proto.runFlagsPhase = function() {
 	this.eachPanel(function(panel) {
 		// falling
 		if(panel.isFalling()) {
-			// should always be only displacing air
 			var other_panel = self.getPanel(panel.row - 1, panel.col);
-			other_panel.flags = 0;
-			self.setPanel(panel.row, panel.col, other_panel); 
-			self.setPanel(panel.row - 1, panel.col, panel);
+			if(!other_panel.isAir()) {
+				panel.removeFlags(JSPDP.Panel.EFlags.Falling | JSPDP.Panel.EFlags.DontSwap);
+				panel.setTimer(JSPDP.Panel.EFlags.Landing, 12);
+				self.needsCheckMatches = true;
+				self.onLand.fire(panel);
+			} else { // ok it's air
+				self.setPanel(panel.row, panel.col, other_panel); 
+				self.setPanel(panel.row - 1, panel.col, panel);
+			}
 		}
 		// timers decrementing
 		else if(panel.timer > 0) {
@@ -234,7 +239,7 @@ proto.runLandingPhase = function() {
 	this.eachPanel(function(panel) {
 		if(panel.isFalling()) {
 			if(panel.row == 0) {
-				panel.removeFlags(JSPDP.Panel.EFlags.Falling);
+				panel.removeFlags(JSPDP.Panel.EFlags.Falling | JSPDP.Panel.EFlags.DontSwap);
 				panel.setTimer(JSPDP.Panel.EFlags.Landing, 12);
 				self.needsCheckMatches = true;
 				self.onLand.fire(panel);
@@ -243,7 +248,7 @@ proto.runLandingPhase = function() {
 				var panel_below = self.getPanel(panel.row - 1, panel.col);
 				if(!panel_below.isAir()) {
 					if(!panel_below.isFalling()) {
-						panel.removeFlags(JSPDP.Panel.EFlags.Falling);
+						panel.removeFlags(JSPDP.Panel.EFlags.Falling | JSPDP.Panel.EFlags.DontSwap);
 						if(panel_below.isHovering()) {
 							// hover and inherit the hover time of the panel it's landing on
 							self.setHoverers(panel.row, panel.col, panel_below.timer, 0);
@@ -485,10 +490,10 @@ proto.expireSwapping = function(panel) {
 };
 
 proto.expireHovering = function(panel) {
-	panel.removeFlags(JSPDP.Panel.EFlags.Hovering);
+	panel.removeFlags(JSPDP.Panel.EFlags.Hovering | JSPDP.Panel.EFlags.DontSwap);
 	panel.addFlags(JSPDP.Panel.EFlags.Falling);
 	var other_panel = this.getPanel(panel.row - 1, panel.col); // air
-	other_panel.flags = 0;
+	other_panel.resetFlags(0);
 	this.setPanel(panel.row, panel.col, other_panel);
 	this.setPanel(panel.row - 1, panel.col, panel);
 };

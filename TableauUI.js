@@ -74,3 +74,13 @@ proto.translate = function(x, y) {
 		y: y - offy
 	};
 };
+
+proto.refresh = function() {
+};
+
+proto.update = function() {
+	return false;
+};
+
+proto.draw = function(ctx) {
+};

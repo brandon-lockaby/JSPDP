@@ -110,13 +110,3 @@ proto.handleRow = function() {
 		this.selection.tableau_pos.row++;
 	}
 };
-
-proto.refresh = function() {
-};
-
-proto.update = function() {
-	return false;
-};
-
-proto.draw = function(ctx) {
-};

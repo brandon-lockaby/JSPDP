@@ -71,7 +71,7 @@ proto.runTick = function() {
 	
 	if(this.stopTicks > 0) {
 		--this.stopTicks;
-	} else if(!this.active) {
+	} else if(!this.active && !this.toppedOut) {
 	
 		if(this.liftJuice > 0) {
 			this.riseOffset += this.liftSpeed;

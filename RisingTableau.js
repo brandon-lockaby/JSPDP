@@ -120,7 +120,6 @@ proto.runTick = function() {
 			break;
 		}
 	}
-	
 	if(this.toppedOut && !this.stopTicks && !this.active) {
 		this.onTopout.fire();
 	}

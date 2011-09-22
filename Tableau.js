@@ -107,10 +107,10 @@ proto.swap = function(row, col, from_left) {
 	other_panel = this.getPanel(row, other_col);
 	var above = this.getPanel(row + 1, col);
 	var other_above = this.getPanel(row + 1, other_col);
-	if(panel && panel.canSwap() && other_panel && other_panel.canSwap()
-		&& !(panel.isAir() && other_panel.isAir())
-		&& (!above || (above && !above.isHovering()))
-		&& (!other_above || (other_above && !other_above.isHovering()))
+	if(panel && panel.canSwap() && other_panel && other_panel.canSwap() // both must be swappable
+		&& !(panel.isAir() && other_panel.isAir()) // they can't both be air
+		&& (!above || (above && !above.isHovering())) // if there's a panel here, it can't be hovering
+		&& (!other_above || (other_above && !other_above.isHovering())) // same on the other side
 	) {
 		
 		var remove_flags = JSPDP.Panel.EFlags.Landing | JSPDP.Panel.EFlags.Falling | JSPDP.Panel.EFlags.FromLeft;

@@ -105,6 +105,15 @@ proto.runTick = function() {
 			
 			this.liftJuice = 0;
 			
+			var top_row = this.panels[this.panels.length - 1];
+			for(var i = 0; i < top_row.length; i++) {
+				if(!top_row[i].isAir()) {
+					this.toppedOut = true;
+					this.riseOffset = 0;
+					break;
+				}
+			}
+			
 			this.onRow.fire();
 		}
 		this.onRise.fire();
@@ -112,16 +121,20 @@ proto.runTick = function() {
 	
 	JSPDP.Tableau.prototype.runTick.call(this);
 	
-	this.toppedOut = false;
-	var top_row = this.panels[this.panels.length - 1];
-	for(var i = 0; i < top_row.length; i++) {
-		if(!top_row[i].isAir()) {
-			this.toppedOut = true;
-			break;
+	if(this.toppedOut) {
+		this.toppedOut = false;
+		var top_row = this.panels[this.panels.length - 1];
+		for(var i = 0; i < top_row.length; i++) {
+			if(!top_row[i].isAir()) {
+				this.toppedOut = true;
+				break;
+			}
 		}
 	}
+	
 	if(this.toppedOut && !this.stopTicks && !this.active) {
 		this.onTopout.fire();
+		console.log("topout");
 	}
 };
 

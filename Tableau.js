@@ -453,6 +453,8 @@ proto.runWrapUpPhase = function() {
 
 proto.expireSwapping = function(panel) {
 	panel.removeFlags(JSPDP.Panel.EFlags.Swapping | JSPDP.Panel.EFlags.DontSwap);
+	var panel_above = this.getPanel(panel.row + 1, panel.col);
+	if(panel_above) panel_above.removeFlags(JSPDP.Panel.EFlags.DontSwap); // todo: this is a sloppy fix
 	var from_left = panel.getFlags(JSPDP.Panel.EFlags.FromLeft);
 	if(from_left) {
 		panel.removeFlags(JSPDP.Panel.EFlags.FromLeft);

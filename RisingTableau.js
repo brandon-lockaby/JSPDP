@@ -24,6 +24,8 @@ JSPDP.RisingTableau = function() {
 
 var proto = (JSPDP.RisingTableau.prototype = new JSPDP.Tableau());
 
+proto.toppedOut = false;
+
 proto.init = function(width, height) {
 	JSPDP.Tableau.prototype.init.call(this, width, height);
 	
@@ -109,6 +111,19 @@ proto.runTick = function() {
 	}
 	
 	JSPDP.Tableau.prototype.runTick.call(this);
+	
+	this.toppedOut = false;
+	var top_row = this.panels[this.panels.length - 1];
+	for(var i = 0; i < top_row.length; i++) {
+		if(!top_row[i].isAir()) {
+			this.toppedOut = true;
+			break;
+		}
+	}
+	
+	if(this.toppedOut && !this.stopTicks && !this.active) {
+		this.onTopout.fire();
+	}
 };
 
 proto.handleCombo = function(combo) {

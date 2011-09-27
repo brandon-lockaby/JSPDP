@@ -25,6 +25,7 @@ JSPDP.Generator = function() {
 var proto = (JSPDP.Generator.prototype = {});
 
 proto.init = function(width) {
+	this.rng = new MersenneTwister(1999);
 	this.width = width;
 	this.history = [];
 	for(var i = 0; i < 2; i++) {
@@ -47,7 +48,7 @@ proto.generateRow = function(radix) {
 	for(var i = 0; i < this.width; i++) {
 		var color;
 		do {
-			color = Math.floor(Math.random() * radix);
+			color = Math.floor(this.rng.random() * radix);
 		} while(
 			(this.history[0][i] == color && this.history[0][i] == this.history[1][i])
 			|| (i >= 2 && this.current[i - 1] == color && this.current[i - 2] == this.current[i - 1])
@@ -79,7 +80,7 @@ proto.generateField = function(radix, total, max_height, wrapped) {
 	}
 	
 	for(var i = 0; i < total; i++) {
-		var col = Math.floor(Math.random() * this.width);
+		var col = Math.floor(this.rng.random() * this.width);
 		var column = columns[col];
 		if(column.length >= max_height) {
 			--i;
@@ -94,7 +95,7 @@ proto.generateField = function(radix, total, max_height, wrapped) {
 		
 		var color;
 		do {
-			color = Math.floor(Math.random() * radix);
+			color = Math.floor(this.rng.random() * radix);
 		} while(
 			(sg(column, 0) == color && sg(column, 1) == color)
 			|| (a == b && b == color)

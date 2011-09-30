@@ -19,32 +19,37 @@
 
 */
 
-JSPDP.KeyboardController = function() {
-}
+JSPDP.Cursor = function() {
+};
 
-var proto = (JSPDP.KeyboardController.prototype = new JSPDP.TableauUI());
+JSPDP.Cursor.EAction = {
+	Rest: 0,
+	Up: 1,
+	Down: 2,
+	Left: 3,
+	Right: 4,
+	Swap1: 5,
+	Swap2: 6,
+	Lift: 7,
+	LENGTH: 8
+};
+
+var proto = (JSPDP.Cursor.prototype = new JSPDP.TableauUI());
 
 proto.init = function(settings) {
 	JSPDP.TableauUI.prototype.init.call(this, settings);
-	
-	this.buttons = [];
-	
-	var kc = JSPDP.KeyboardController;
-	this.buttons.push(new kc.Button(kc.EActions.Up, 38));
-	this.buttons.push(new kc.Button(kc.EActions.Down, 40));
-	this.buttons.push(new kc.Button(kc.EActions.Left, 37));
-	this.buttons.push(new kc.Button(kc.EActions.Right, 39));
-	this.buttons.push(new kc.Button(kc.EActions.Swap1, 90));
-	this.buttons.push(new kc.Button(kc.EActions.Swap2, 88));
-	this.buttons.push(new kc.Button(kc.EActions.Lift, 32));
 	
 	this.position = {
 		row: 0,
 		col: 0
 	};
 	
-	this.tableau.onActionPhase.subscribe(this.handleActionPhase.bind(this));
+	this.action = JSPDP.Cursor.EAction.Rest;
+	this.lastAction = JSPDP.Cursor.EAction.Rest;
+	this.lastActionRepeatCount = 0;
 	
+	// subscribe to events
+	this.tableau.onActionPhase.subscribe(this.handleActionPhase.bind(this));
 	if(this.tableau.onRise) {
 		this.tableau.onRise.subscribe(this.handleRise.bind(this));
 	}
@@ -52,11 +57,7 @@ proto.init = function(settings) {
 		this.tableau.onRow.subscribe(this.handleRow.bind(this));
 	}
 	
-	addEventListener('keydown', this.onKeydown.bind(this), false);
-	addEventListener('keyup', this.onKeyup.bind(this), false);
-	document.onmousedown = function() { return false; }; // workaround for keyup misbehavior
-	
-	// set up rendering
+	// set up for rendering
 	this.canvas = this.createCanvas();
 	this.ctx = this.canvas.getContext('2d');
 	
@@ -68,79 +69,50 @@ proto.moveTo = function(row, col) {
 	this.position.row = row;
 	this.position.col = col;
 	this.moved = true;
+	this.action = this.lastAction = this.lastActionRepeatCount = 0;
 	return true;
 };
 
-proto.onKeydown = function(event) {
-	for(var i = 0; i < this.buttons.length; i++) {
-		if(event.keyCode == this.buttons[i].key) {
-			var button = this.buttons[i];
-			if(!button.pressed) {
-				button.pressed = true;
-				button.lastHandled = false;
-			}
-			break;
-		}
+proto.startAction = function(action) {
+	this.action = action;
+};
+
+proto.stopAction = function(action) {
+	if(this.action == action) {
+		this.action = 0;
 	}
 };
 
-proto.onKeyup = function(event) {
-	for(var i = 0; i < this.buttons.length; i++) {
-		if(event.keyCode == this.buttons[i].key) {
-			this.buttons[i].pressed = false;
-			break;
-		}
-	}
-};
+// event handlers
 
 proto.handleActionPhase = function() {
-	// check if new keys were pressed, first
-	var done = false;
-	for(var i = 0; i < this.buttons.length; i++) {
-		var button = this.buttons[i];
-		if(button.pressed && !button.lastHandled) {
-			button.lastHandled = this.tableau.tickCount;
-			this.perform(button.action);
-			// test: unpress all other buttons
-			/*for(var b = 0; b = this.buttons.length; b++) {
-				if(this.buttons[b] != button) {
-					this.buttons[b].pressed = false;
-					this.buttons[b].lastHandled = 0;
-				}
-			}*/
-			done = true;
-			break;
-		}
-	}
+	var action = this.action;
 	
-	// otherwise, possibly repeat action
-	if(!done) {
-		for(var i = 0; i < this.buttons.length; i++) {
-			var button = this.buttons[i];
-			if(button.pressed && button.lastHandled) {
-				var action = button.action;
-				var ea = JSPDP.KeyboardController.EActions;
-				if(action == ea.Up || action == ea.Down || action == ea.Left || action == ea.Right) {
-					if(this.tableau.tickCount - button.lastHandled >= 25) {
-						this.perform(action);
-					}
-				} else if(action == ea.Lift) {
-					this.perform(action);
-				}
-				break;
-			}
-		}
-	}
-};
+	// handle repeating action
 
-proto.perform = function(action) {
+	if(this.lastAction == this.action) {
+		++this.lastActionRepeatCount;
+		if(action != JSPDP.Cursor.EAction.Lift && this.lastActionRepeatCount < 25) {
+			action = 0;
+		}
+		else if(action == JSPDP.Cursor.EAction.Swap1 || action == JSPDP.Cursor.EAction.Swap2) {
+			action = 0;
+		}
+	} else {
+		this.lastAction = this.action;
+		this.lastActionRepeatCount = 0;
+	}
 	
+	// perform action
+	
+	if(!action) return;
+
 	var old_pos = {
 		row: this.position.row,
 		col: this.position.col
 	};
-
-	var ea = JSPDP.KeyboardController.EActions;
+	
+	var ea = JSPDP.Cursor.EAction;
 	switch(action) {
 		case ea.Up:
 			this.position.row++;
@@ -165,6 +137,8 @@ proto.perform = function(action) {
 			break;
 	}
 	
+	// constrain position
+	
 	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.riseOffset);
 	
 	if(this.position.row < 0)
@@ -177,6 +151,8 @@ proto.perform = function(action) {
 		this.position.col = 0;
 	else if(this.position.col >= this.tableau.dimensions.width - 1)
 		this.position.col = this.tableau.dimensions.width - 2;
+		
+	// flag this as having moved
 	
 	if(this.position.row != old_pos.row || this.position.col != old_pos.col) {
 		this.moved = true;
@@ -197,26 +173,6 @@ proto.handleRow = function() {
 	if(this.position.row > top_row)
 		this.position.row = top_row;
 	this.moved = true;
-};
-
-////
-
-JSPDP.KeyboardController.EActions = {
-	Up: 1,
-	Down: 2,
-	Left: 3,
-	Right: 4,
-	Swap1: 5,
-	Swap2: 6,
-	Lift: 7
-};
-
-JSPDP.KeyboardController.Button = function(action, key) {
-	this.action = action;
-	this.key = key;
-	
-	this.pressed = false;
-	this.lastHandled = false;
 };
 
 // rendering

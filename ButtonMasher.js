@@ -24,9 +24,9 @@ JSPDP.ButtonMasher = function() {
 
 var proto = (JSPDP.ButtonMasher.prototype = {});
 
-proto.init = function(tableau, keyboard_controller) {
+proto.init = function(tableau, cursor) {
 	this.tableau = tableau;
-	this.keyboardController = keyboard_controller;
+	this.cursor = cursor;
 	
 	return this;
 };
@@ -36,12 +36,19 @@ proto.runTick = function() {
 	this.tableau.eachPanel(function(panel) {
 		if(!panel.isAir() && panel.row > highest) highest = panel.row;
 	});
-	if(highest < 10) {
-		this.keyboardController.perform(JSPDP.KeyboardController.EActions.Lift);
+	
+	if(!this.tableau.active && highest < 10) {
+		this.cursor.startAction(JSPDP.Cursor.EAction.Lift);
 	} else {
-		var row = Math.floor(Math.random() * (this.tableau.dimensions.height - 1));
-		var col = Math.floor(Math.random() * (this.tableau.dimensions.width - 1));
-		this.keyboardController.moveTo(row, col);
-		this.keyboardController.perform(JSPDP.KeyboardController.EActions.Swap1);
+		var behavior = 1;
+		if(behavior == 0) {
+			var row = Math.floor(Math.random() * (this.tableau.dimensions.height - 1));
+			var col = Math.floor(Math.random() * (this.tableau.dimensions.width - 1));
+			this.cursor.moveTo(row, col);
+			this.cursor.startAction(JSPDP.Cursor.EAction.Swap1);
+		} else if(behavior == 1) {
+			var action = Math.ceil(Math.random() * JSPDP.Cursor.EAction.LENGTH);
+			this.cursor.startAction(action);
+		}
 	}
 };

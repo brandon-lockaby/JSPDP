@@ -27,7 +27,7 @@ var proto = (JSPDP.DualController.prototype = new JSPDP.TableauUI());
 proto.init = function(settings) {
 	JSPDP.TableauUI.prototype.init.call(this, settings);
 	
-	this.keyboardController = new JSPDP.KeyboardController().init(settings);
+	this.keyboardCursor = new JSPDP.KeyboardCursor().init(settings);
 	this.touchController = new JSPDP.TouchController().init(settings);
 	
 	this.touchController.onSelect.subscribe(this.handleSelect.bind(this));
@@ -40,31 +40,31 @@ proto.handleSelect = function(selection) {
 	var row = selection.tableau_pos.row;
 	var col = selection.tableau_pos.col;
 	
-	if(col > 0 && col > this.keyboardController.position.col) {
+	if(col > 0 && col > this.keyboardCursor.position.col) {
 		--col;
 	}
 	
 	if(!this.tableau.bounds(row, col + 1)) --col;
 	if(!this.tableau.bounds(row, col)) return;
 	
-	this.keyboardController.moveTo(row, col);
+	this.keyboardCursor.moveTo(row, col);
 };
 
 proto.handleSwap = function(panels) {
 	var row = panels[0].row;
 	var col = panels[0].col;
 	if(panels[1].col < col) col = panels[1].col;
-	this.keyboardController.moveTo(row, col);
+	this.keyboardCursor.moveTo(row, col);
 };
 
 proto.refresh = function() {
-	this.keyboardController.refresh();
+	this.keyboardCursor.refresh();
 };
 
 proto.update = function() {
-	return this.keyboardController.update();
+	return this.keyboardCursor.update();
 };
 
 proto.draw = function(ctx) {
-	this.keyboardController.draw(ctx);
+	this.keyboardCursor.draw(ctx);
 };

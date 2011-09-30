@@ -221,7 +221,7 @@ JSPDP.KeyboardController.Button = function(action, key) {
 
 // rendering
 
-this.moved = false;
+proto.moved = false;
 
 proto.refresh = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);

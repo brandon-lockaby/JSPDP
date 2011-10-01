@@ -125,9 +125,15 @@ proto.swap = function(row, col, from_left) {
 		
 		// bug removal re: sharpobject@gmail.com
 		if(panel.isAir()) {
-			if(other_above && !other_above.isAir()) other_above.addFlags(JSPDP.Panel.EFlags.DontSwap);
+			if(other_above && !other_above.isAir()) {
+				other_above.addFlags(JSPDP.Panel.EFlags.DontSwap);
+				other_panel.addFlags(JSPDP.Panel.EFlags.DontSwap);
+			}
 		} else if(other_panel.isAir()) {
-			if(above && !above.isAir()) above.addFlags(JSPDP.Panel.EFlags.DontSwap);
+			if(above && !above.isAir()) {
+				above.addFlags(JSPDP.Panel.EFlags.DontSwap);
+				panel.addFlags(JSPDP.Panel.EFlags.DontSwap);
+			}
 		}
 		var below = this.getPanel(row - 1, col);
 		var other_below = this.getPanel(row - 1, other_col);

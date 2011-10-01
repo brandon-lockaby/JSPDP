@@ -92,7 +92,7 @@ proto.handleActionPhase = function() {
 
 	if(this.lastAction == this.action) {
 		++this.lastActionRepeatCount;
-		if(action != JSPDP.Cursor.EAction.Lift && this.lastActionRepeatCount < 25) {
+		if(action != JSPDP.Cursor.EAction.Lift && this.lastActionRepeatCount < 16) {
 			action = 0;
 		}
 		else if(action == JSPDP.Cursor.EAction.Swap1 || action == JSPDP.Cursor.EAction.Swap2) {

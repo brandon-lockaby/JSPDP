@@ -48,6 +48,10 @@ proto.init = function(settings) {
 	this.lastAction = JSPDP.Cursor.EAction.Rest;
 	this.lastActionRepeatCount = 0;
 	
+	// events
+	this.onStartAction = new JSPDP.Event();
+	this.onStopAction = new JSPDP.Event();
+	
 	// subscribe to events
 	this.tableau.onActionPhase.subscribe(this.handleActionPhase.bind(this));
 	if(this.tableau.onRise) {
@@ -75,12 +79,14 @@ proto.moveTo = function(row, col) {
 
 proto.startAction = function(action) {
 	this.action = action;
+	this.onStartAction.fire(action);
 };
 
 proto.stopAction = function(action) {
 	if(this.action == action) {
 		this.action = 0;
 	}
+	this.onStopAction.fire(action); // todo: is this right?
 };
 
 // event handlers

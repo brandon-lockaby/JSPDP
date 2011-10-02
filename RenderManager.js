@@ -47,6 +47,14 @@ proto.init = function(settings, renderer_classes) {
 	return this;
 };
 
+proto.get = function(t) {
+	for(var i in this.renderers) {
+		if(this.renderers[i] instanceof t) {
+			return this.renderers[i];
+		}
+	}
+};
+
 proto.start = function() {
 	this.running = true;
 	this.refresh();

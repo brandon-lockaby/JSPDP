@@ -32,11 +32,6 @@ proto.init = function(settings) {
 		var c = document.createElement("canvas");
 		c.width = this.panelDimensions.width;
 		c.height = this.panelDimensions.height;
-		console.log(c, this.theme.panelImages[i],
-			this.theme.panelDimensions.width * i, 0,
-			this.theme.panelDimensions.width, this.theme.panelDimensions.height,
-			0, 0,
-			this.panelDimensions.width, this.panelDimensions.height);
 		c.getContext("2d").drawImage(this.theme.panelImages[i],
 			0, 0,
 			this.theme.panelDimensions.width, this.theme.panelDimensions.height,

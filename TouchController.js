@@ -81,6 +81,7 @@ proto.onMousewheel = function(event) {
 	if(delta !== 0) {
 		if(this.tableau instanceof JSPDP.RisingTableau) {
 			this.tableau.lift();
+			event.preventDefault();
 		}
 	}
 };

@@ -55,6 +55,7 @@ proto.onKeydown = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {
 			this.startAction(this.buttons[i].action);
+			event.preventDefault();
 			break;
 		}
 	}
@@ -64,6 +65,7 @@ proto.onKeyup = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {
 			this.stopAction(this.buttons[i].action);
+			event.preventDefault();
 			break;
 		}
 	}

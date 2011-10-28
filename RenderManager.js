@@ -29,7 +29,7 @@ proto.init = function(settings, renderer_classes) {
 	
 	this.canvas = this.createCanvas();
 	if(this.tableau instanceof JSPDP.RisingTableau) {
-		this.canvas.height -= this.theme.panelDimensions.height;
+		this.canvas.height -= this.panelDimensions.height;
 	}
 	this.ctx = this.canvas.getContext('2d');
 	

@@ -36,8 +36,8 @@ proto.init = function(path, handle_load) {
 	this.path = path;
 	
 	this.panelDimensions = {
-		width: 56,
-		height: 56
+		width: 64,
+		height: 64
 	};
 	
 	this.panelImages = [];

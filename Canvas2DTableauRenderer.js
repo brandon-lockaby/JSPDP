@@ -27,6 +27,25 @@ var proto = (JSPDP.Canvas2DTableauRenderer.prototype = new JSPDP.TableauUI());
 proto.init = function(settings) {
 	JSPDP.TableauUI.prototype.init.call(this, settings);
 	
+	this.panelImages = [];
+	for(var i = 0; i < this.theme.panelImages.length; i++) {
+		var c = document.createElement("canvas");
+		c.width = this.panelDimensions.width;
+		c.height = this.panelDimensions.height;
+		console.log(c, this.theme.panelImages[i],
+			this.theme.panelDimensions.width * i, 0,
+			this.theme.panelDimensions.width, this.theme.panelDimensions.height,
+			0, 0,
+			this.panelDimensions.width, this.panelDimensions.height);
+		c.getContext("2d").drawImage(this.theme.panelImages[i],
+			0, 0,
+			this.theme.panelDimensions.width, this.theme.panelDimensions.height,
+			0, 0,
+			this.panelDimensions.width, this.panelDimensions.height);
+		console.log("ok");
+		this.panelImages[i] = c;
+	}
+	
 	this.canvas = this.createCanvas();
 	this.ctx = this.canvas.getContext('2d');
 	this.ctx.fillStyle = "rgb(255,255,255)";
@@ -52,32 +71,32 @@ proto.renderPanel = function(panel) {
 	if(!panel.isAir() && !panel.isPopped() && !panel.isSwapping()) {
 		if(panel.isMatching() && (this.tableau.tickCount & 1) && (panel.timer > (this.tableau.durations.match * 0.25))) {
 			// render white
-			this.ctx.fillRect(canvas_pos.x, canvas_pos.y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
+			this.ctx.fillRect(canvas_pos.x, canvas_pos.y, this.panelDimensions.width, this.panelDimensions.height);
 		} else if(panel.isPopping()) {
 			// render gray
 			this.ctx.fillStyle = "rgb(64,64,64)";
-			this.ctx.fillRect(canvas_pos.x, canvas_pos.y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
+			this.ctx.fillRect(canvas_pos.x, canvas_pos.y, this.panelDimensions.width, this.panelDimensions.height);
 			this.ctx.fillStyle = "rgb(255,255,255)";
 		} else {
 			// render normally
-			this.ctx.drawImage(this.theme.panelImages[panel.color], canvas_pos.x, canvas_pos.y);
+			this.ctx.drawImage(this.panelImages[panel.color], canvas_pos.x, canvas_pos.y);
 		}
 	} else {
-		this.ctx.clearRect(canvas_pos.x, canvas_pos.y, this.theme.panelDimensions.width, this.theme.panelDimensions.height);
+		this.ctx.clearRect(canvas_pos.x, canvas_pos.y, this.panelDimensions.width, this.panelDimensions.height);
 	}
 };
 
 proto.renderSwappingPanel = function(panel) {
 	if(!panel.isAir()) {
 		var canvas_pos = this.canvasPos(panel.row, panel.col);
-		var offs = this.theme.panelDimensions.width / 4;
+		var offs = this.panelDimensions.width / 4;
 		offs *= (4 - panel.timer);
 		if(panel.flags & JSPDP.Panel.EFlags.FromLeft) {
-			offs = -this.theme.panelDimensions.width + offs;
+			offs = -this.panelDimensions.width + offs;
 		} else {
-			offs = this.theme.panelDimensions.width - offs;
+			offs = this.panelDimensions.width - offs;
 		}
-		this.ctx.drawImage(this.theme.panelImages[panel.color], canvas_pos.x + offs, canvas_pos.y);
+		this.ctx.drawImage(this.panelImages[panel.color], canvas_pos.x + offs, canvas_pos.y);
 	}
 };
 
@@ -125,12 +144,12 @@ proto.renderSwappingPanels = function() {
 proto.renderGenerator = function() {
 	var canvas_pos = this.canvasPos(-1, 0);
 	for(var i = 0; i < this.tableau.dimensions.width; i++) {
-		this.ctx.drawImage(this.theme.panelImages[this.tableau.generator.current[i]], this.theme.panelDimensions.width * i, canvas_pos.y);
+		this.ctx.drawImage(this.panelImages[this.tableau.generator.current[i]], this.panelDimensions.width * i, canvas_pos.y);
 	}
 	this.ctx.save();
 	this.ctx.fillStyle = "rgb(0,0,0)";
 	this.ctx.globalAlpha = 0.6;
-	this.ctx.fillRect(0, canvas_pos.y, this.theme.panelDimensions.width * this.tableau.dimensions.width, this.theme.panelDimensions.width);
+	this.ctx.fillRect(0, canvas_pos.y, this.panelDimensions.width * this.tableau.dimensions.width, this.panelDimensions.width);
 	this.ctx.restore();
 	this.needsGeneratorRender = false;
 };

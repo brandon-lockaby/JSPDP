@@ -43,8 +43,8 @@ proto.init = function(settings) {
 
 proto.handlePop = function(panel) {
 	var canvas_pos = this.canvasPos(panel.row, panel.col);
-	canvas_pos.x += this.theme.panelDimensions.width / 2;
-	canvas_pos.y += this.theme.panelDimensions.height / 2;
+	canvas_pos.x += this.panelDimensions.width / 2;
+	canvas_pos.y += this.panelDimensions.height / 2;
 	for(var i = 0; i < 8; i++) {
 		this.particles.push({
 			b: this.tableau.tickCount,
@@ -69,22 +69,22 @@ proto.handleCombo = function(combo) {
 		var text = "x" + chain_size;
 		var canvas = document.createElement("canvas");
 		var ctx = canvas.getContext("2d");
-		canvas.height = this.theme.panelDimensions.height;
-		var font = Math.floor(this.theme.panelDimensions.height * 0.8) + "px Arial";
+		canvas.height = this.panelDimensions.height;
+		var font = Math.floor(this.panelDimensions.height * 0.8) + "px Arial";
 		ctx.font = font;
-		var width = ctx.measureText(text).width + (this.theme.panelDimensions.width * 0.6);
+		var width = ctx.measureText(text).width + (this.panelDimensions.width * 0.6);
 		offset += width;
 		canvas.width = width;
 		ctx.font = font;
 		ctx.textBaseline = "top";
-		ctx.lineWidth = this.theme.panelDimensions.width * 0.08;
-		//if(canvas.width < this.theme.panelWidth) canvas.width = this.theme.panelWidth;
+		ctx.lineWidth = this.panelDimensions.width * 0.08;
+		//if(canvas.width < this.panelWidth) canvas.width = this.panelWidth;
 		ctx.fillStyle = "green";
 		ctx.strokeStyle = "white";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.strokeRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = "white";
-		ctx.fillText(text, this.theme.panelDimensions.width * 0.3, this.theme.panelDimensions.height * 0.08);
+		ctx.fillText(text, this.panelDimensions.width * 0.3, this.panelDimensions.height * 0.08);
 		
 		var canvas_pos = this.canvasPos(combo[0].row, combo[0].col);
 		var card = {
@@ -98,21 +98,21 @@ proto.handleCombo = function(combo) {
 		var text = combo_size;
 		var canvas = document.createElement("canvas");
 		var ctx = canvas.getContext("2d");
-		canvas.height = this.theme.panelDimensions.height;
-		var font = Math.floor(this.theme.panelDimensions.height * 0.8) + "px Arial";
+		canvas.height = this.panelDimensions.height;
+		var font = Math.floor(this.panelDimensions.height * 0.8) + "px Arial";
 		ctx.font = font;
-		var width = ctx.measureText(text).width + (this.theme.panelDimensions.width * 0.6);
+		var width = ctx.measureText(text).width + (this.panelDimensions.width * 0.6);
 		canvas.width = width;
 		ctx.font = font;
 		ctx.textBaseline = "top";
-		ctx.lineWidth = this.theme.panelDimensions.width * 0.08;
-		//if(canvas.width < this.theme.panelWidth) canvas.width = this.theme.panelWidth;
+		ctx.lineWidth = this.panelDimensions.width * 0.08;
+		//if(canvas.width < this.panelWidth) canvas.width = this.panelWidth;
 		ctx.fillStyle = "red";
 		ctx.strokeStyle = "white";
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		ctx.strokeRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = "white";
-		ctx.fillText(text, this.theme.panelDimensions.width * 0.3, this.theme.panelDimensions.height * 0.08);
+		ctx.fillText(text, this.panelDimensions.width * 0.3, this.panelDimensions.height * 0.08);
 		
 		var canvas_pos = this.canvasPos(combo[0].row, combo[0].col);
 		canvas_pos.x += offset;
@@ -154,7 +154,7 @@ proto.refresh = function() {
 	for(var i = 0; i < this.cards.length; i++) {
 		var card = this.cards[i];
 		var ticks = this.tableau.tickCount - card.born;
-		var offset = -1 - Math.sin((ticks / life) * (Math.PI / 2)) * (this.theme.panelDimensions.height * 0.75);
+		var offset = -1 - Math.sin((ticks / life) * (Math.PI / 2)) * (this.panelDimensions.height * 0.75);
 		this.ctx.drawImage(card.canvas, card.canvas_pos.x, card.canvas_pos.y + offset);
 		if(this.tableau.tickCount > card.born + life) {
 			this.cards.splice(i--, 1);

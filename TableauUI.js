@@ -28,37 +28,38 @@ proto.init = function(settings) {
 	this.tableau = settings.tableau;
 	this.theme = settings.theme;
 	this.element = settings.element;
+	this.panelDimensions = settings.panelDimensions;
 	
 	return this;
 };
 
 proto.createCanvas = function() {
 	var canvas = document.createElement("canvas");
-	canvas.width = this.theme.panelDimensions.width * this.tableau.dimensions.width;
-	canvas.height = this.theme.panelDimensions.height * this.tableau.dimensions.height;
+	canvas.width = this.panelDimensions.width * this.tableau.dimensions.width;
+	canvas.height = this.panelDimensions.height * this.tableau.dimensions.height;
 	if(this.tableau instanceof JSPDP.RisingTableau) {
-		canvas.height += this.theme.panelDimensions.height;
+		canvas.height += this.panelDimensions.height;
 	}
 	return canvas;
 };
 
 proto.canvasPos = function(row, col) {
-	var y = (this.theme.panelDimensions.height * this.tableau.dimensions.height) - (this.theme.panelDimensions.height * (row + 1));
+	var y = (this.panelDimensions.height * this.tableau.dimensions.height) - (this.panelDimensions.height * (row + 1));
 	return {
-		x: this.theme.panelDimensions.width * col,
+		x: this.panelDimensions.width * col,
 		y: y
 	}
 };
 
 proto.tableauPos = function(x, y) {
 	return {
-		row: this.tableau.dimensions.height - 1 - Math.floor(y / this.theme.panelDimensions.height),
-		col: Math.floor(x / this.theme.panelDimensions.width)
+		row: this.tableau.dimensions.height - 1 - Math.floor(y / this.panelDimensions.height),
+		col: Math.floor(x / this.panelDimensions.width)
 	};
 };
 
 proto.riseOffset = function() {
-	return this.tableau instanceof JSPDP.RisingTableau ? -(this.theme.panelDimensions.height * this.tableau.riseOffset) : 0;
+	return this.tableau instanceof JSPDP.RisingTableau ? -(this.panelDimensions.height * this.tableau.riseOffset) : 0;
 };
 
 proto.translate = function(x, y) {

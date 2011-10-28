@@ -40,6 +40,8 @@ proto.init = function(settings) {
 	addEventListener('mousedown', this.onMousedown.bind(this), false);
 	addEventListener('mouseup', this.onMouseup.bind(this), false);
 	addEventListener('mousemove', this.onMousemove.bind(this), false);
+	addEventListener('mousewheel', this.onMousewheel.bind(this), false);
+	addEventListener('DOMMouseScroll', this.onMousewheel.bind(this), false);
 	
 	return this;
 };
@@ -71,6 +73,15 @@ proto.onMousemove = function(event) {
 		var canvas_pos = this.translate(event.pageX, event.pageY);
 		canvas_pos.y -= this.riseOffset();
 		this.tableau_pos = this.tableauPos(canvas_pos.x, canvas_pos.y);
+	}
+};
+
+proto.onMousewheel = function(event) {
+	var delta = event.wheelDelta ? event.wheelDelta * ((!!window.opera) ? -1 : 1) : event.detail * -1;
+	if(delta !== 0) {
+		if(this.tableau instanceof JSPDP.RisingTableau) {
+			this.tableau.lift();
+		}
 	}
 };
 

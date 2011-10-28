@@ -24,7 +24,7 @@ JSPDP.GraphicsTheme = function() {
 
 var proto = (JSPDP.GraphicsTheme.prototype = {});
 
-proto.init = function(handle_load) {
+proto.init = function(path, handle_load) {
 
 	// Events
 	
@@ -32,6 +32,8 @@ proto.init = function(handle_load) {
 	this.onload.subscribe(handle_load);
 	
 	// Fields
+	
+	this.path = path;
 	
 	this.panelDimensions = {
 		width: 56,
@@ -41,19 +43,19 @@ proto.init = function(handle_load) {
 	this.panelImages = [];
 	
 	
-	// load default images
+	// load images
 	
 	var image_paths = [
-		"themes/alpha/panels.png",
-		"themes/alpha/yellow-duck.png",
-		"themes/alpha/cursor.png"
+		this.path + "/panels.png",
+		this.path + "/yellow-duck.png",
+		this.path + "/cursor.png"
 	];
 	var self = this;
 	new JSPDP.ImageLoader().init(image_paths, function(progress) {
 		if(console) console.log("Images loaded: ", progress);
 		
 		// render individual panel images
-		var panels_image = progress.image_map["themes/alpha/panels.png"];
+		var panels_image = progress.image_map[self.path + "/panels.png"];
 		for(var i = 0; i < 5; i++) {
 			var c = document.createElement("canvas");
 			c.width = self.panelDimensions.width;
@@ -67,8 +69,8 @@ proto.init = function(handle_load) {
 		}
 		
 		// test test
-		self.cursorImage = progress.image_map["themes/alpha/cursor.png"];
-		self.duck = progress.image_map["themes/alpha/yellow-duck.png"];
+		self.cursorImage = progress.image_map[self.path + "/cursor.png"];
+		self.duck = progress.image_map[self.path + "/yellow-duck.png"];
 		
 		self.onload.fire();
 		

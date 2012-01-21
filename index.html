@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+		<link rel="image_src" href="http://jspdp.no.de/8wwdz.png"/>
+		<title>JSPDPSPTEST</title>
+		<script src="js/jspdp-build.js"></script>
+		<script src="js/Stats.js"></script>
+		<style>
+			html {
+				width: 100%;
+				height: 100%;
+			}
+			body {
+				background: rgb(206,220,231);
+				background: -moz-radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%, rgba(89,106,114,1) 100%);
+				background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(206,220,231,1)), color-stop(100%,rgba(89,106,114,1)));
+				background: -webkit-radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%,rgba(89,106,114,1) 100%);
+				background: -o-radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%,rgba(89,106,114,1) 100%);
+				background: -ms-radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%,rgba(89,106,114,1) 100%);
+				background: radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%,rgba(89,106,114,1) 100%);
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cedce7', endColorstr='#596a72',GradientType=1 );
+			}
+			#test {
+				width: 336px;
+				height: 672px;
+				border: 1px solid #000;
+				background: rgba(0,0,0,0.5);
+			}
+			#test canvas {
+				position: absolute;
+				z-index: 1;
+			}
+			#game {
+				width: 336px;
+				margin: auto;
+				margin-top: 64px;
+				display: none;
+			}
+			noscript p {
+				display: block;
+				width: 336px;
+				margin: auto;
+				margin-top: 128px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="game">
+			<p>Controls: Use the mouse or arrow keys, Z and Space</p>
+			<div id="test"></div>
+		</div>
+		<script src="jquery.min.js"></script>
+		<script>
+			$(function() {
+				$("#game").show();
+		
+				var theme = new JSPDP.GraphicsTheme();
+				theme.init("themes/test/", function() {
+					var tableau = new JSPDP.RisingTableau().init(6, 12);
+					var settings = {
+						tableau: tableau,
+						theme: theme,
+						panelDimensions: {width: 56, height: 56}
+					};
+				
+					var render_manager = new JSPDP.RenderManager().init(
+						settings,
+						[JSPDP.Canvas2DTableauRenderer, JSPDP.DualController, JSPDP.Canvas2DFXRenderer]
+					);
+				
+					document.getElementById("test").appendChild(render_manager.canvas);
+				
+					render_manager.start();
+				
+				
+					{
+						var kbc = undefined;
+						for(var i = 0; i < render_manager.renderers.length; i++) {
+							if(render_manager.renderers[i] instanceof JSPDP.DualController) {
+								kbc = render_manager.renderers[i].keyboardCursor;
+							}
+						}
+						var button_masher = new JSPDP.ButtonMasher().init(tableau, kbc);
+				
+						var frame_ms = 1000 / 60;
+						var tick = function() {
+							//for(var i = 0; i < 100; i++)
+							{
+								//button_masher.runTick();
+								tableau.runTick();
+							}
+						}
+						var running = true;
+						var tick_interval = null;
+						window.addEventListener('keydown', function(event) {
+							if(event.keyCode == 0x32) tableau.runTick();
+							else if(event.keyCode == 0x31) {
+								running = !running;
+								if(running) {
+									tick_interval = setInterval(tick, frame_ms);
+								} else {
+									clearInterval(tick_interval);
+								}
+							}
+						}, false);
+						tick_interval = setInterval(tick, frame_ms);
+					}
+				
+				}); // theme.init
+
+
+
+
+
+				var stats = new Stats();
+
+				// Align top-left
+				stats.domElement.style.position = 'absolute';
+				stats.domElement.style.left = '0px';
+				stats.domElement.style.top = '0px';
+
+				document.body.appendChild( stats.domElement );
+
+				setInterval( function () {
+
+					stats.update();
+
+				}, 1000 / 60 );
+			
+			
+			
+			
+				/*var sesh = "missingno.";
+				var fps_history = [];
+				
+				$.post("/stats/new", {
+					channel: "test 2 (changed panel theme)",
+					screen_res: [screen.width, screen.height],
+					window_res: [$(window).width(), $(window).height()]
+				}, function(data) {
+					if(data.sesh) {
+						sesh = data.sesh;
+					
+						setInterval(function() {
+							fps_history.push(stats.getFPS());
+						}, 1000);
+					
+						setInterval(function() {
+							$.post("/stats/update", {
+								"sesh": sesh,
+								"fps": fps_history
+							});
+							fps_history.length = 0;
+						}, 10000);
+					}
+				});*/
+			});
+			
+		</script>
+		<noscript>
+			<p>Scripts are disabled... <a href="http://enable-javascript.com/">Learn how to fix this</a></p>
+			<img src="/stats/noscript" width="0" height="0"/>
+		</noscript>
+		<a href="http://github.com/brandon-lockaby/JSPDP"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/abad93f42020b733148435e2cd92ce15c542d320/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub"></a>
+		<a href="/stats" style="position: absolute; bottom: 5px; left: 5px">stats</a>
+	</body>
+</html>

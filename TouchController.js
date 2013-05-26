@@ -38,8 +38,11 @@ proto.init = function(settings) {
 		this.tableau.onRow.subscribe(this.handleRow.bind(this));
 	}
 	addEventListener('mousedown', this.onMousedown.bind(this), false);
+	addEventListener('touchstart', this.onMousedown.bind(this), false);
 	addEventListener('mouseup', this.onMouseup.bind(this), false);
+	addEventListener('touchend', this.onMouseup.bind(this), false);
 	addEventListener('mousemove', this.onMousemove.bind(this), false);
+	addEventListener('touchmove', this.onMousemove.bind(this), false);
 	addEventListener('mousewheel', this.onMousewheel.bind(this), false);
 	addEventListener('DOMMouseScroll', this.onMousewheel.bind(this), false);
 	
@@ -47,7 +50,9 @@ proto.init = function(settings) {
 };
 
 proto.onMousedown = function(event) {
-	var canvas_pos = this.translate(event.pageX, event.pageY);
+	var x = event.changedTouches ? event.changedTouches[0].pageX : event.pageX;
+	var y = event.changedTouches ? event.changedTouches[0].pageY : event.pageY;
+	var canvas_pos = this.translate(x, y);
 	canvas_pos.y -= this.riseOffset();
 	var tableau_pos = this.tableauPos(canvas_pos.x, canvas_pos.y);
 	var panel = this.tableau.getPanel(tableau_pos.row, tableau_pos.col);
@@ -62,6 +67,7 @@ proto.onMousedown = function(event) {
 	else {
 		this.selection = null;
 	}
+	event.preventDefault();
 };
 	
 proto.onMouseup = function(event) {
@@ -70,10 +76,13 @@ proto.onMouseup = function(event) {
 	
 proto.onMousemove = function(event) {
 	if(this.selection) {
-		var canvas_pos = this.translate(event.pageX, event.pageY);
+		var x = event.changedTouches ? event.changedTouches[0].pageX : event.pageX;
+		var y = event.changedTouches ? event.changedTouches[0].pageY : event.pageY;
+		var canvas_pos = this.translate(x, y);
 		canvas_pos.y -= this.riseOffset();
 		this.tableau_pos = this.tableauPos(canvas_pos.x, canvas_pos.y);
 	}
+	event.preventDefault();
 };
 
 proto.onMousewheel = function(event) {

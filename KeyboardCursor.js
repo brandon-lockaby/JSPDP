@@ -25,6 +25,7 @@ JSPDP.KeyboardCursor = function() {
 JSPDP.KeyboardCursor.Button = function(key, action) {
 	this.key = key;
 	this.action = action;
+	this.pressed = false;
 };
 
 var proto = (JSPDP.KeyboardCursor.prototype = new JSPDP.Cursor());
@@ -54,9 +55,12 @@ proto.init = function(settings) {
 proto.onKeydown = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {
-			this.startAction(this.buttons[i].action);
 			event.preventDefault();
-			break;
+			if(!this.buttons[i].pressed) {
+				this.buttons[i].pressed = true;
+				this.startAction(this.buttons[i].action);
+				break;
+			}
 		}
 	}
 };
@@ -64,9 +68,12 @@ proto.onKeydown = function(event) {
 proto.onKeyup = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {
-			this.stopAction(this.buttons[i].action);
 			event.preventDefault();
-			break;
+			if(this.buttons[i].pressed) {
+				this.buttons[i].pressed = false;
+				this.stopAction(this.buttons[i].action);
+				break;
+			}
 		}
 	}
 };

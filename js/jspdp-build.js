@@ -2027,15 +2027,14 @@ JSPDP.Cursor = function() {
 };
 
 JSPDP.Cursor.EAction = {
-	Rest: 0,
-	Up: 1,
-	Down: 2,
-	Left: 3,
-	Right: 4,
-	Swap1: 5,
-	Swap2: 6,
-	Lift: 7,
-	LENGTH: 8
+	Up: 0,
+	Down: 1,
+	Left: 2,
+	Right: 3,
+	Swap1: 4,
+	Swap2: 5,
+	Lift: 6,
+	LENGTH: 7
 };
 
 var proto = (JSPDP.Cursor.prototype = new JSPDP.TableauUI());
@@ -2048,9 +2047,9 @@ proto.init = function(settings) {
 		col: 0
 	};
 	
-	this.action = JSPDP.Cursor.EAction.Rest;
-	this.lastAction = JSPDP.Cursor.EAction.Rest;
-	this.lastActionRepeatCount = 0;
+	this.actions = new Array(JSPDP.Cursor.EAction.LENGTH);
+	for(var i = 0; i < JSPDP.Cursor.EAction.LENGTH; i++)
+		this.actions[i] = 0;
 	
 	// events
 	this.onStartAction = new JSPDP.Event();
@@ -2077,95 +2076,105 @@ proto.moveTo = function(row, col) {
 	this.position.row = row;
 	this.position.col = col;
 	this.moved = true;
-	this.action = this.lastAction = this.lastActionRepeatCount = 0;
+	this.stopMovement();
 	return true;
 };
 
 proto.startAction = function(action) {
-	this.action = action;
-	this.onStartAction.fire(action);
+	if(!this.actions[action]) {
+		var ea = JSPDP.Cursor.EAction;
+		if(action == ea.Up || action == ea.Down
+			|| action == ea.Left || action == ea.Right) {
+			this.stopMovement();
+		}
+		this.actions[action] = 1;
+		this.onStartAction.fire(action);
+	}
 };
 
 proto.stopAction = function(action) {
-	if(this.action == action) {
-		this.action = 0;
+	if(this.actions[action]) {
+		this.actions[action] = 0;
+		this.onStopAction.fire(action);
 	}
-	this.onStopAction.fire(action); // todo: is this right?
+};
+
+proto.stopMovement = function() {
+	var ea = JSPDP.Cursor.EAction;
+	this.stopAction(ea.Up);
+	this.stopAction(ea.Down);
+	this.stopAction(ea.Left);
+	this.stopAction(ea.Right);
 };
 
 // event handlers
 
 proto.handleActionPhase = function() {
-	var action = this.action;
-	
-	// handle repeating action
+	// perform actions
+	for(var action = 0; action < JSPDP.Cursor.EAction.LENGTH; action++) {
+		if(!this.actions[action]) continue;
 
-	if(this.lastAction == this.action) {
-		++this.lastActionRepeatCount;
-		if(action != JSPDP.Cursor.EAction.Lift && this.lastActionRepeatCount < 16) {
-			action = 0;
-		}
-		else if(action == JSPDP.Cursor.EAction.Swap1 || action == JSPDP.Cursor.EAction.Swap2) {
-			action = 0;
-		}
-	} else {
-		this.lastAction = this.action;
-		this.lastActionRepeatCount = 0;
-	}
-	
-	// perform action
-	
-	if(!action) return;
-
-	var old_pos = {
-		row: this.position.row,
-		col: this.position.col
-	};
-	
-	var ea = JSPDP.Cursor.EAction;
-	switch(action) {
-		case ea.Up:
-			this.position.row++;
-			break;
-		case ea.Down:
-			this.position.row--;
-			break;
-		case ea.Left:
-			this.position.col--;
-			break;
-		case ea.Right:
-			this.position.col++;
-			break;
-		case ea.Swap1:
-		case ea.Swap2:
-			this.tableau.swap(this.position.row, this.position.col, true);
-			break;
-		case ea.Lift:
-			if(this.tableau instanceof JSPDP.RisingTableau) {
-				this.tableau.lift();
-			}
-			break;
-	}
-	
-	// constrain position
-	
-	var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.riseOffset);
-	
-	if(this.position.row < 0)
-		this.position.row = 0;
-	else if(this.position.row > top_row) {
-		this.position.row = top_row;
-	}
-	
-	if(this.position.col < 0)
-		this.position.col = 0;
-	else if(this.position.col >= this.tableau.dimensions.width - 1)
-		this.position.col = this.tableau.dimensions.width - 2;
+		var rep = this.actions[action]++;
 		
-	// flag this as having moved
-	
-	if(this.position.row != old_pos.row || this.position.col != old_pos.col) {
-		this.moved = true;
+		// everything but Lift given a delay
+		if(action != JSPDP.Cursor.EAction.Lift) {
+			if(rep != 1 && rep < 16) {
+				continue;
+			}
+		}
+
+		var old_pos = {
+			row: this.position.row,
+			col: this.position.col
+		};
+
+		var ea = JSPDP.Cursor.EAction;
+		switch(action) {
+			case ea.Up:
+				this.position.row++;
+				break;
+			case ea.Down:
+				this.position.row--;
+				break;
+			case ea.Left:
+				this.position.col--;
+				break;
+			case ea.Right:
+				this.position.col++;
+				break;
+			case ea.Swap1:
+			case ea.Swap2:
+				this.tableau.swap(this.position.row, this.position.col, true);
+				this.stopAction(JSPDP.Cursor.EAction.Swap1);
+				this.stopAction(JSPDP.Cursor.EAction.Swap2);
+				break;
+			case ea.Lift:
+				if(this.tableau instanceof JSPDP.RisingTableau) {
+					this.tableau.lift();
+				}
+				break;
+		}
+		
+		// constrain position
+		
+		var top_row = this.tableau.dimensions.height - 1 - Math.ceil(this.tableau.riseOffset);
+		
+		if(this.position.row < 0)
+			this.position.row = 0;
+		else if(this.position.row > top_row) {
+			this.position.row = top_row;
+		}
+		
+		if(this.position.col < 0)
+			this.position.col = 0;
+		else if(this.position.col >= this.tableau.dimensions.width - 1)
+			this.position.col = this.tableau.dimensions.width - 2;
+			
+		// flag this as having moved
+		
+		if(this.position.row != old_pos.row || this.position.col != old_pos.col) {
+			this.moved = true;
+		}
 	}
 };
 
@@ -2234,6 +2243,7 @@ JSPDP.KeyboardCursor = function() {
 JSPDP.KeyboardCursor.Button = function(key, action) {
 	this.key = key;
 	this.action = action;
+	this.pressed = false;
 };
 
 var proto = (JSPDP.KeyboardCursor.prototype = new JSPDP.Cursor());
@@ -2263,9 +2273,12 @@ proto.init = function(settings) {
 proto.onKeydown = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {
-			this.startAction(this.buttons[i].action);
 			event.preventDefault();
-			break;
+			if(!this.buttons[i].pressed) {
+				this.buttons[i].pressed = true;
+				this.startAction(this.buttons[i].action);
+				break;
+			}
 		}
 	}
 };
@@ -2273,9 +2286,12 @@ proto.onKeydown = function(event) {
 proto.onKeyup = function(event) {
 	for(var i = 0; i < this.buttons.length; i++) {
 		if(event.keyCode == this.buttons[i].key) {
-			this.stopAction(this.buttons[i].action);
 			event.preventDefault();
-			break;
+			if(this.buttons[i].pressed) {
+				this.buttons[i].pressed = false;
+				this.stopAction(this.buttons[i].action);
+				break;
+			}
 		}
 	}
 };

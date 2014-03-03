@@ -2065,6 +2065,14 @@ proto.init = function(settings) {
 	}
 	
 	// set up for rendering
+	var c = document.createElement("canvas");
+	c.width = this.panelDimensions.width * 2;
+	c.height = this.panelDimensions.height;
+	c.getContext("2d").drawImage(this.theme.cursorImage,
+		0, 0,
+		c.width, c.height);
+	this.cursorImage = c;
+
 	this.canvas = this.createCanvas();
 	this.ctx = this.canvas.getContext('2d');
 	
@@ -2201,7 +2209,7 @@ proto.moved = false;
 proto.refresh = function() {
 	this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 	var canvas_pos = this.canvasPos(this.position.row, this.position.col);
-	this.ctx.drawImage(this.theme.cursorImage, canvas_pos.x, canvas_pos.y);
+	this.ctx.drawImage(this.cursorImage, canvas_pos.x, canvas_pos.y);
 };
 
 proto.update = function() {

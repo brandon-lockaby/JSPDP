@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+		<title>JSPDPSPTEST</title>
+		<script src="js/jspdp-build.js"></script>
+		<style>
+			* {
+				margin: 0px;
+				padding: 0px;
+			}
+			html, body {
+				width: 100%;
+				height: 100%;
+			}
+			body {
+				background: rgb(206,220,231);
+				background: -moz-radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%, rgba(89,106,114,1) 100%);
+				background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%,rgba(206,220,231,1)), color-stop(100%,rgba(89,106,114,1)));
+				background: -webkit-radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%,rgba(89,106,114,1) 100%);
+				background: -o-radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%,rgba(89,106,114,1) 100%);
+				background: -ms-radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%,rgba(89,106,114,1) 100%);
+				background: radial-gradient(center, ellipse cover,  rgba(206,220,231,1) 0%,rgba(89,106,114,1) 100%);
+				filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cedce7', endColorstr='#596a72',GradientType=1 );
+			}
+			#test {
+				background: rgba(0,0,0,0.5);
+				display: inline-block;
+			}
+			#lift {
+				position: fixed;
+				bottom: 0px;
+				right: 0px;
+				height: 33%;
+				background: #fdf;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="test"></div>
+		<div id="lift"></div>
+		<script src="jquery.min.js"></script>
+		<script>
+			$(function() {
+				var panel_height = Math.floor($(window).height() / 10);
+				var panel_width = panel_height;
+				
+				$("#lift").css("width", $(window).width() - (panel_width * 6));
+
+				var theme = new JSPDP.GraphicsTheme();
+				theme.init("themes/test/", function() {
+					var tableau = new JSPDP.RisingTableau().init(6, 10);
+					var settings = {
+						tableau: tableau,
+						theme: theme,
+						panelDimensions: {width: panel_width, height: panel_height}
+					};
+				
+					var render_manager = new JSPDP.RenderManager().init(
+						settings,
+						[JSPDP.Canvas2DTableauRenderer, JSPDP.DualController, JSPDP.Canvas2DFXRenderer]
+					);
+				
+					document.getElementById("test").appendChild(render_manager.canvas);
+				
+					render_manager.start();
+				
+				
+					{
+						var kbc = undefined;
+						for(var i = 0; i < render_manager.renderers.length; i++) {
+							if(render_manager.renderers[i] instanceof JSPDP.DualController) {
+								kbc = render_manager.renderers[i].keyboardCursor;
+							}
+						}
+						var button_masher = new JSPDP.ButtonMasher().init(tableau, kbc);
+				
+						var frame_ms = 1000 / 60;
+						var tick = function() {
+							//for(var i = 0; i < 100; i++)
+							{
+								//button_masher.runTick();
+								tableau.runTick();
+							}
+						}
+						var running = true;
+						var tick_interval = null;
+						window.addEventListener('keydown', function(event) {
+							if(event.keyCode == 0x32) tableau.runTick();
+							else if(event.keyCode == 0x31) {
+								running = !running;
+								if(running) {
+									tick_interval = setInterval(tick, frame_ms);
+								} else {
+									clearInterval(tick_interval);
+								}
+							}
+						}, false);
+						tick_interval = setInterval(tick, frame_ms);
+					}
+
+					$("#lift").bind("click touchstart", function(evt) {
+						tableau.lift();
+					});
+				
+				}); // theme.init
+
+
+
+
+
+				
+			});
+			
+		</script>
+	</body>
+</html>
